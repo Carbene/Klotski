@@ -8,16 +8,17 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
 public class LevelSelectionFrame extends JDialog {
-    private String selectedLevel = null;
-    private String[] levels = {"1", "2", "3", "4"};
+    private String selectedLevel;
+    private String[] levels = {"1", "2", "3", "4","5"};
     private JLabel previewLabel;
     private JLabel achievementStepsLabel;
     private JLabel achivementTimeLabel;
     private UserInterfaceFrame userInterfaceFrame;
-    private User owner;
+    private User user;
 
-    public LevelSelectionFrame(Frame owner) {
+    public LevelSelectionFrame(Frame owner,User user) {
         super(owner, "Select Level", true);
+        this.user = user;
         setSize(500, 400);
         setLocationRelativeTo(owner);
         setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
@@ -25,35 +26,40 @@ public class LevelSelectionFrame extends JDialog {
         this.userInterfaceFrame = (UserInterfaceFrame) owner;
         getBackgroundPanel();
 
+    }
+
+    private void updatePreview() {
+        previewLabel.setText(this.selectedLevel);
+        if(this.user.getBestRecord() != null) {
+            achievementStepsLabel.setText(this.user.getBestRecord()[Integer.parseInt(selectedLevel)][0] == 0 ?"Please first play the game" : "Best: " + this.user.getBestRecord()[Integer.parseInt(selectedLevel)][0] + " Steps");
+            achivementTimeLabel.setText(this.user.getBestRecord()[Integer.parseInt(selectedLevel)][1] == 0 ?"Please first play the game" : "Best: " + this.user.getBestRecord()[Integer.parseInt(selectedLevel)][1] + " Seconds");
+        }else{
+            achievementStepsLabel.setText("Please login to see your best record");
+            achivementTimeLabel.setText("Please login to see your best record");
+        }
+
 
     }
 
-    private void updatePreview(String level) {
-        previewLabel.setText(level);
-        achievementStepsLabel.setText("Best: [Steps for " + level + "]");
-        achivementTimeLabel.setText("Best: [Time for " + level + "]");
-    }
-
-    private void startGame(UserInterfaceFrame userInterfaceFrame, String level, boolean isTimed) {
+    private void startGame(boolean isTimed) {
         if (selectedLevel == null) {
-            JOptionPane.showMessageDialog(this, "Please select a level first using the 'Select Level' button.", "Level Not Selected", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Please select a level first before using the 'Select Level' button.", "Level Not Selected", JOptionPane.WARNING_MESSAGE);
             return;
         }
         if(isTimed){
             this.userInterfaceFrame.setVisible(false);
-            GameFrame gameFrame = new GameFrame(this, selectedLevel, setLevel(Integer.parseInt(selectedLevel)), true);
+            GameFrame gameFrame = new GameFrame(this, user,setLevel(Integer.parseInt(selectedLevel)), true);
 
             gameFrame.setVisible(true);
             this.setVisible(false);
         }else{
             this.userInterfaceFrame.setVisible(false);
-            GameFrame gameFrame = new GameFrame(this, selectedLevel, setLevel(Integer.parseInt(selectedLevel)), false);
+            GameFrame gameFrame = new GameFrame(this, user,setLevel(Integer.parseInt(selectedLevel)), false);
 
             gameFrame.setVisible(true);
             this.setVisible(false);
         }
     }
-
 
     public Level setLevel(int code) {
         for(Level map : Level.values()){
@@ -74,8 +80,8 @@ public class LevelSelectionFrame extends JDialog {
             levelButton.setAlignmentX(Component.CENTER_ALIGNMENT);
             levelButton.setMaximumSize(new Dimension(Integer.MAX_VALUE, levelButton.getPreferredSize().height));
             levelButton.addActionListener(e -> {
-                updatePreview(level);
                 this.selectedLevel = level;
+                updatePreview();
             });
             levelListPanel.add(levelButton);
             levelListPanel.add(Box.createRigidArea(new Dimension(0, 10)));
@@ -101,8 +107,8 @@ public class LevelSelectionFrame extends JDialog {
         gameStartPanel.add(timedGameButton);
         gameStartPanel.add(Box.createHorizontalGlue());
 
-        generalGameButton.addActionListener(e -> startGame(userInterfaceFrame, selectedLevel,false));
-        timedGameButton.addActionListener(e -> startGame(userInterfaceFrame, selectedLevel,true));
+        generalGameButton.addActionListener(e -> startGame(false));
+        timedGameButton.addActionListener(e -> startGame(true));
 
         return gameStartPanel;
     }
@@ -182,7 +188,7 @@ public class LevelSelectionFrame extends JDialog {
     }
 
     public User getUser() {
-        return this.owner;
+        return this.user;
     }
 
 }

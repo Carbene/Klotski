@@ -14,13 +14,13 @@ public class GameRecorder implements Serializable {
     private final Stack<Move> MOVES;
     private final int[][] INITIAL_MAP;
     private int[][] finalMap;
-    private User owner;
+    private User user;
 
     public GameRecorder(int[][] map, User owner) {
 
         this.MOVES = new Stack<Move>();
         this.INITIAL_MAP = map;
-        this.owner = owner;
+        this.user = owner;
 
     }
 
@@ -101,5 +101,9 @@ public class GameRecorder implements Serializable {
 
     public int[][] getINITIAL_MAP() {
         return INITIAL_MAP;
+    }
+
+    public User getUser() {
+        return user;
     }
 }

@@ -12,14 +12,14 @@ public class UserInterfaceFrame extends JFrame {
     private LoginFrame loginFrame;
     private String selectedLevel = null;
     private boolean bgmEnabled = true;
-    private User owner;
+    private User user;
     private BackgroundPanel background;
     private JPanel buttonPanel;
 
 
     public UserInterfaceFrame(LoginFrame loginFrame, User owner) {
         this.loginFrame = loginFrame;
-        this.owner = owner;
+        this.user = owner;
 
         initializeUserInterface();
         getBackgroundPanel();
@@ -88,7 +88,7 @@ public class UserInterfaceFrame extends JFrame {
         styleBtn(startGameButton);
         buttonPanel.add(startGameButton);
         startGameButton.addActionListener(e -> {
-            LevelSelectionFrame levelDialog = new LevelSelectionFrame(this);
+            LevelSelectionFrame levelDialog = new LevelSelectionFrame(this,this.user);
             levelDialog.setVisible(true);
         });
     }

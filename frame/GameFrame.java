@@ -17,9 +17,7 @@ import static frame.theme.Style.styleBtn;
 public class GameFrame extends JFrame {
 
     private LevelSelectionFrame selectionFrame;
-    private String gameMode;
-    private String gameLevel;
-    private boolean bgmEnabled;
+    private boolean isTimed;
 
     private JLabel stepsLabel;
     private JLabel timerLabel;
@@ -34,34 +32,34 @@ public class GameFrame extends JFrame {
     private Timer gameTimer;
     private ArrayList<BoxComponent> boxes;
     private LogicController logicController;
+    private User user;
 
 
-    public GameFrame(LevelSelectionFrame selectionFrame, String mode, Level map, boolean bgm) {
+    public GameFrame(LevelSelectionFrame selectionFrame,User user,Level level, boolean isTimed) {
         enableEvents(AWTEvent.KEY_EVENT_MASK);
         enableEvents(AWTEvent.MOUSE_EVENT_MASK);
 
         this.selectionFrame = selectionFrame;
-        this.gameMode = mode;
-//        this.gameLevel = map.getCHINESENAME();
-        this.bgmEnabled = bgm;
-        this.gameRecorder = new GameRecorder(this.copyMap(map),new User());
+        this.isTimed = isTimed;
+        this.user = user;
+        this.gameRecorder = new GameRecorder(LogicController.copyMap(level),this.user);
+        this.logicController = new LogicController(level,user, this);
 
 
-        setTitle("Klotski Game - Level: " + gameLevel);
+        setTitle("Klotski Game");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setUndecorated(true);
         setExtendedState(JFrame.MAXIMIZED_BOTH);
 
         getBackgroundPanel();
-        initializeKlotskiBoard(map);
+        initializeKlotskiBoard(level);
         setListener();
-        this.logicController = new LogicController(copyMap(map), this);
 
     }
 
     private void initializeKlotskiBoard(Level map) {
 
-        int[][] mapInitializer = copyMap(map);
+        int[][] mapInitializer = LogicController.copyMap(map);
 
         ArrayList<BoxComponent> boxes = new ArrayList<>();
 
@@ -133,6 +131,10 @@ public class GameFrame extends JFrame {
         timerLabel.setText(String.format("Time: %02d:%02d", minutes, seconds));
     }
 
+    private void updateStepLabel(){
+        stepsLabel.setText("Steps: " + stepCount);
+    }
+
     private void getBackgroundPanel() {
         this.backgroundPanel = new BackgroundPanel("path/to/game_wallpaper.jpg");
         backgroundPanel.setLayout(new BorderLayout(10, 10));
@@ -140,22 +142,22 @@ public class GameFrame extends JFrame {
 
         this.getKlotskiBoardPanel();
 
-        backgroundPanel.add(getInfoPanel(this.gameMode), BorderLayout.NORTH);
+        backgroundPanel.add(getInfoPanel(isTimed), BorderLayout.NORTH);
         backgroundPanel.add(getBoardContainer(), BorderLayout.CENTER);
         backgroundPanel.add(getControlPanel(), BorderLayout.SOUTH);
         backgroundPanel.add(getDirectionPanel(), BorderLayout.EAST);
         backgroundPanel.add(getDirectionPanel(), BorderLayout.WEST);
     }
 
-    private JPanel getInfoPanel(String gameMode) {
+    private JPanel getInfoPanel(boolean isTimed) {
         JPanel infoPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 40, 10));
         infoPanel.setOpaque(false);
-        JLabel stepsLabel = new JLabel("Steps: 0");
+        this.stepsLabel = new JLabel("Steps: " + stepCount);
         Style.styleLabel(stepsLabel);
         infoPanel.add(stepsLabel);
 
-        JLabel timerLabel = new JLabel("Time: 00:00");
-        if ("Time-limited".equals(gameMode)) {
+        this.timerLabel = new JLabel("Time: 00:00");
+        if (isTimed) {
             Style.styleLabel(timerLabel);
             infoPanel.add(timerLabel);
             startTimer();
@@ -333,15 +335,7 @@ public class GameFrame extends JFrame {
 
     }
 
-    private int[][] copyMap(Level level) {
-        int[][] map = new int[level.getHeight()][level.getWidth()];
-        for (int i = 0; i < map.length; i++) {
-            for (int j = 0; j < map[0].length; j++) {
-                map[i][j] = level.getMAP()[i][j];
-            }
-        }
-        return map;
-    }
+
 
     private void doMove(Direction direction,boolean isWithdraw) {
         int row = selectedBox.getRow();
@@ -396,6 +390,7 @@ public class GameFrame extends JFrame {
 
     private void afterMove(Direction direction) {
         stepCount++;
+        updateStepLabel();
         this.gameRecorder.record(this.selectedBox,direction);
         if(this.logicController.isGameOver()){
             JOptionPane.showMessageDialog(this, "You win within" + stepCount + "steps!" +'\n' + "Your best record is ");

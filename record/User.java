@@ -96,7 +96,7 @@ public class User implements Serializable {
         return bestRecord;
     }
 
-    public static void updateBestRecord(Level level, User user, int mode, int achievement){
+    public static void setBestRecord(Level level, User user, int mode, int achievement){
 
         user.bestRecord[level.ordinal()][mode] = achievement;
 
