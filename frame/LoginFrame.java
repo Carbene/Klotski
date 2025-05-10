@@ -140,7 +140,7 @@ public class LoginFrame extends JFrame {
         } else {
             String username = nameField.getText();
             String password = new String(passwordField.getPassword());
-            ArrayList<User> users = User.deserializeList("path/to/save/userInfo");
+            ArrayList<User> users = User.deserializeList();
             if(users == null || users.isEmpty() || username.isEmpty() || password.isEmpty()) {
                 JDialog dialog = new JDialog();
                 dialog.setTitle("Error");

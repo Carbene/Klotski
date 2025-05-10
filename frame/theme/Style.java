@@ -1,4 +1,4 @@
-package frame.thme;
+package frame.theme;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;

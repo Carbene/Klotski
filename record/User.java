@@ -1,6 +1,6 @@
 package record;
 
-import view.Leveled;
+import view.Level;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -8,24 +8,25 @@ import java.util.ArrayList;
 public class User implements Serializable {
     private final String id;
     private final String password;
-    private int[][] BestRecord;
+    private int[][] bestRecord;
+    private static final String DIRECTORY = "src/record/userInfo";
 
     public User(String id, String password) {
         this.id = id;
         this.password = password;
-        User.serialize(this,"path/to/save");
-        this.BestRecord = new int[Leveled.values().length][2];
+        User.serialize(this);
+        this.bestRecord = new int[Level.values().length][2];
     }
 
     public User(){
-        this.id = null;
+        this.id = "Visitor";
         this.password = null;
-        User.serialize(this,"path/to/save");
+        User.serialize(this);
     }
 
-    public static void serialize(User user,String path) {
+    public static void serialize(User user) {
         try {
-            FileOutputStream fileOut = new FileOutputStream("object.ser");
+            FileOutputStream fileOut = new FileOutputStream(User.DIRECTORY+File.separator+user.id);
             ObjectOutputStream out = new ObjectOutputStream(fileOut);
             out.writeObject(user);
             out.close();
@@ -35,45 +36,51 @@ public class User implements Serializable {
         }
     }
 
-    public static User deserialize(String path){
+    public static User deserialize(String id){
         User user = null;
-        try {
-            FileInputStream fileIn = new FileInputStream("object.ser");
-            ObjectInputStream in = new ObjectInputStream(fileIn);
-            if(in.readObject() instanceof User) {
-                user = (User) in.readObject();
-            }else{
+        String filePath = DIRECTORY + File.separator + id;
+        File userFile = new File(filePath);
+        if (!userFile.exists() || !userFile.isFile()) {
+            System.err.println("File not found or is not a file: " + filePath);
+            return null;
+        }
+        try (FileInputStream fileIn = new FileInputStream(filePath);
+             ObjectInputStream in = new ObjectInputStream(fileIn)) {
+            Object obj = in.readObject();
+            if(obj instanceof User) {
+                user = (User) obj;
+            } else {
+                System.err.println("Object read is not an instance of User: " + filePath);
                 return null;
             }
-            in.close();
-            fileIn.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
+        } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }
         return user;
     }
 
-    public static ArrayList<User> deserializeList(String path) {
-        ArrayList<User> users = new ArrayList<User>();
-        try {
-            FileInputStream fileIn = new FileInputStream(path);
-            ObjectInputStream in = new ObjectInputStream(fileIn);
-            File file = new File(path);
-            File[] fileList = file.listFiles();
-            if(fileList == null) {
-                return null;
-            }else {
-                for (File user : fileList) {
-                    users.add(deserialize(user.getAbsolutePath()));
+    public static ArrayList<User> deserializeList() {
+        ArrayList<User> users = new ArrayList<>();
+        File directory = new File(User.DIRECTORY);
+
+        if (!directory.exists() || !directory.isDirectory()) {
+            return users;
+        }
+
+        File[] fileList = directory.listFiles();
+
+        if (fileList == null) {
+            return users;
+        }
+
+        for (File userFile : fileList) {
+            if (userFile.isFile()) {
+                User deserializedUser = deserialize(userFile.getAbsolutePath());
+                if (deserializedUser != null) {
+                    users.add(deserializedUser);
                 }
             }
-            fileIn.close();
-            in.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-    }
+        }
         return users;
     }
 
@@ -86,18 +93,18 @@ public class User implements Serializable {
     }
 
     public int[][] getBestRecord() {
-        return BestRecord;
+        return bestRecord;
     }
 
-    public static void updateBestRecord(Leveled level, User user,int mode,int achievement){
+    public static void updateBestRecord(Level level, User user, int mode, int achievement){
 
-        user.BestRecord[level.ordinal()][mode] = achievement;
+        user.bestRecord[level.ordinal()][mode] = achievement;
 
     }
 
-    public static int getBestRecord(Leveled level, User user,int mode){
+    public static int getBestRecord(Level level, User user, int mode){
 
-        return user.BestRecord[level.ordinal()][mode];
+        return user.bestRecord[level.ordinal()][mode];
 
     }
 }

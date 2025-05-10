@@ -15,7 +15,7 @@ public class LogicController {
 
         this.map = map;
         this.frame = frame;
-        this.gameRecorder = new GameRecorder(map,frame);
+        this.gameRecorder = new GameRecorder(map,frame.getLevelSelectionFrame().getUser());
 
     }
 

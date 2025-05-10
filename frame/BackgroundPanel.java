@@ -14,6 +14,7 @@ public class BackgroundPanel extends JPanel {
         try {
             if (imagePath == null || imagePath.trim().isEmpty()) {
                 this.backgroundImage = null;
+                System.out.println("Image path is null or empty");
                 return;
             }
             File imageFile = new File(imagePath);
@@ -21,10 +22,6 @@ public class BackgroundPanel extends JPanel {
         } catch (IOException e) {
             this.backgroundImage = null;
         }
-    }
-
-    public BackgroundPanel(Image image) {
-        this.backgroundImage = image;
     }
 
     @Override

@@ -6,7 +6,7 @@ import java.awt.*;
 import java.awt.event.*;
 import record.*;
 
-import static frame.thme.Style.styleBtn;
+import static frame.theme.Style.styleBtn;
 
 public class UserInterfaceFrame extends JFrame {
     private LoginFrame loginFrame;
@@ -36,14 +36,14 @@ public class UserInterfaceFrame extends JFrame {
     }
 
     private void initializeUserInterface() {
-        setTitle("User Interface");
+        setTitle("Klotski Board Game");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setUndecorated(true);
         setExtendedState(JFrame.MAXIMIZED_BOTH);
     }
 
     private void getBackgroundPanel() {
-        this.background = new BackgroundPanel("path/to/settings_wallpaper.jpg");
+        this.background = new BackgroundPanel("src/frame/theme/userInterfaceBackgroundPic.jpg");
         background.setLayout(new BorderLayout(10, 10));
         setContentPane(background);
 
@@ -90,13 +90,6 @@ public class UserInterfaceFrame extends JFrame {
         startGameButton.addActionListener(e -> {
             LevelSelectionFrame levelDialog = new LevelSelectionFrame(this);
             levelDialog.setVisible(true);
-            String level = levelDialog.getSelectedLevel();
-            if (level != null) {
-                this.selectedLevel = level;
-                System.out.println("Level set in UserInterfaceFrame: " + this.selectedLevel);
-            } else {
-                System.out.println("Level selection cancelled or closed without selection.");
-            }
         });
     }
 
