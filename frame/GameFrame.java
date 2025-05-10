@@ -73,7 +73,7 @@ public class GameFrame extends JFrame {
                     box.setSize(box.GRIDSIZE, box.GRIDSIZE);
                     mapInitializer[i][j] = 0;
                 } else if (mapInitializer[i][j] == 2) {
-                    box = new BoxComponent(Color.ORANGE, i, j, this);
+                    box = new BoxComponent(Color.GREEN, i, j, this);
                     box.setSize(box.GRIDSIZE * 2, box.GRIDSIZE);
                     mapInitializer[i][j] = 0;
                     mapInitializer[i][j + 1] = 0;
@@ -83,7 +83,7 @@ public class GameFrame extends JFrame {
                     mapInitializer[i][j] = 0;
                     mapInitializer[i + 1][j] = 0;
                 } else if (mapInitializer[i][j] == 4) {
-                    box = new BoxComponent(Color.GREEN, i, j, this);
+                    box = new BoxComponent(Color.RED, i, j, this);
                     box.setSize(box.GRIDSIZE * 2, box.GRIDSIZE * 2);
                     mapInitializer[i][j] = 0;
                     mapInitializer[i + 1][j] = 0;
@@ -98,6 +98,8 @@ public class GameFrame extends JFrame {
             }
         }
         this.repaint();
+        boxes.add(new BoxComponent(this));
+        this.selectedBox = boxes.getLast();
         klotskiBoardPanel.revalidate();
         klotskiBoardPanel.repaint();
         klotskiBoardPanel.setFocusable(true);
@@ -141,6 +143,8 @@ public class GameFrame extends JFrame {
         backgroundPanel.add(getInfoPanel(this.gameMode), BorderLayout.NORTH);
         backgroundPanel.add(getBoardContainer(), BorderLayout.CENTER);
         backgroundPanel.add(getControlPanel(), BorderLayout.SOUTH);
+        backgroundPanel.add(getDirectionPanel(), BorderLayout.EAST);
+        backgroundPanel.add(getDirectionPanel(), BorderLayout.WEST);
     }
 
     private JPanel getInfoPanel(String gameMode) {
@@ -158,6 +162,59 @@ public class GameFrame extends JFrame {
         }
 
         return infoPanel;
+    }
+
+    private JPanel getDirectionPanel(){
+
+        JPanel directionPanel = new JPanel(new GridBagLayout());
+        directionPanel.setOpaque(false);
+        directionPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.insets = new Insets(5, 5, 5, 5);
+
+        JButton upButton = new JButton("Up");
+        JButton downButton = new JButton("Down");
+        JButton leftButton = new JButton("Left");
+        JButton rightButton = new JButton("Right");
+
+        styleBtn(upButton);
+        styleBtn(downButton);
+        styleBtn(leftButton);
+        styleBtn(rightButton);
+
+        gbc.gridx = 1;
+        gbc.gridy = 0;
+        gbc.weightx = 0.33; // 分配权重
+        gbc.weighty = 0.33;
+        directionPanel.add(upButton, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        gbc.weightx = 0.33;
+        gbc.weighty = 0.33;
+        directionPanel.add(leftButton, gbc);
+
+        gbc.gridx = 2;
+        gbc.gridy = 1;
+        gbc.weightx = 0.33;
+        gbc.weighty = 0.33;
+        directionPanel.add(rightButton, gbc);
+
+        gbc.gridx = 1;
+        gbc.gridy = 2;
+        gbc.weightx = 0.33;
+        gbc.weighty = 0.33;
+        directionPanel.add(downButton, gbc);
+
+        upButton.addActionListener(e -> doMove(Direction.UP,false));
+        downButton.addActionListener(e -> doMove(Direction.DOWN,false));
+        leftButton.addActionListener(e -> doMove(Direction.LEFT,false));
+        rightButton.addActionListener(e -> doMove(Direction.RIGHT,false));
+
+        return directionPanel;
+
     }
 
     private JPanel getControlPanel() {
@@ -183,6 +240,7 @@ public class GameFrame extends JFrame {
 
         saveButton.addActionListener(e -> saveGame());
         reloadButton.addActionListener(e -> reloadGame());
+        withdrawButton.addActionListener(e -> withdrawGame());
         answerButton.addActionListener(e -> showAnswer());
         quitButton.addActionListener(e -> quitGame());
 
@@ -214,7 +272,26 @@ public class GameFrame extends JFrame {
     }
 
     private void reloadGame() {
-        System.out.println("Reload Game button clicked.");
+
+        for(int i = gameRecorder.getMoves().size(); i > 0; i--){
+            withdrawGame();
+        }
+
+    }
+
+    private void withdrawGame() {
+
+        if(this.gameRecorder.getMoves().isEmpty()){
+            JOptionPane.showMessageDialog(this, "No moves to withdraw.");
+            return;
+        }else {
+            Move withdrawedMove = this.gameRecorder.getMoves().pop();
+            this.selectedBox = withdrawedMove.getBox();
+            Direction direction = Direction.getOpposite(withdrawedMove.getDirection());
+            doMove(direction, true);
+            this.selectedBox = boxes.getLast();
+            repaint();
+        }
     }
 
     private void showAnswer() {
@@ -266,7 +343,7 @@ public class GameFrame extends JFrame {
         return map;
     }
 
-    private void doMove(Direction direction) {
+    private void doMove(Direction direction,boolean isWithdraw) {
         int row = selectedBox.getRow();
         int col = selectedBox.getCol();
         int[][] map = logicController.getMap();
@@ -274,28 +351,36 @@ public class GameFrame extends JFrame {
             map[row][col] = 0;
             map[row + direction.getRow()][col + direction.getCol()] = 1;
             boxRepaint(row, col, row + direction.getRow(), col + direction.getCol(), selectedBox);
-            afterMove(direction);
+            if(!isWithdraw){
+                afterMove(direction);
+            }
         } else if (map[row][col] == 2 && Move.checkMoveValidity(2, row + direction.getRow(), col + direction.getCol(), direction, this.logicController)) {
             map[row][col] = 0;
             map[row][col + 1] = 0;
             map[row + direction.getRow()][col + direction.getCol()] = 2;
             map[row + direction.getRow()][col + direction.getCol() + 1] = 2;
             boxRepaint(row, col, row + direction.getRow(), col + direction.getCol(), selectedBox);
-            afterMove(direction);
+            if(!isWithdraw){
+                afterMove(direction);
+            }
         } else if (map[row][col] == 3 && Move.checkMoveValidity(3, row + direction.getRow(), col + direction.getCol(), direction, this.logicController)) {
             map[row][col] = 0;
             map[row + 1][col] = 0;
             map[row + direction.getRow()][col + direction.getCol()] = 3;
             map[row + direction.getRow() + 1][col + direction.getCol()] = 3;
             boxRepaint(row, col, row + direction.getRow(), col + direction.getCol(), selectedBox);
-            afterMove(direction);
+            if(!isWithdraw){
+                afterMove(direction);
+            }
         } else if (map[row][col] == 4 && Move.checkMoveValidity(4, row + direction.getRow(), col + direction.getCol(), direction, this.logicController)) {
             map[row][col] = 0;
             map[row][col - 1] = 0;
             map[row + direction.getRow()][col - 1] = 4;
             map[row + direction.getRow()][col - 2] = 4;
             boxRepaint(row, col, row + direction.getRow(), col + direction.getCol(), selectedBox);
-            afterMove(direction);
+            if(!isWithdraw){
+                afterMove(direction);
+            }
         }
     }
 
@@ -334,28 +419,28 @@ public class GameFrame extends JFrame {
             actionMap.put("moveUp", new AbstractAction() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    doMove(Direction.UP);
+                    doMove(Direction.UP,false);
                 }
             });
 
             actionMap.put("moveDown", new AbstractAction() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    doMove(Direction.DOWN);
+                    doMove(Direction.DOWN,false);
                 }
             });
 
             actionMap.put("moveLeft", new AbstractAction() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    doMove(Direction.LEFT);
+                    doMove(Direction.LEFT,false);
                 }
             });
 
             actionMap.put("moveRight", new AbstractAction() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    doMove(Direction.RIGHT);
+                    doMove(Direction.RIGHT,false);
                 }
             });
 
@@ -377,5 +462,9 @@ public class GameFrame extends JFrame {
 
     public LevelSelectionFrame getLevelSelectionFrame() {
         return this.selectionFrame;
+    }
+
+    public ArrayList<BoxComponent> getBoxes() {
+        return boxes;
     }
 }

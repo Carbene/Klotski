@@ -38,6 +38,16 @@ public class BoxComponent extends JComponent {
         });
     }
 
+    public BoxComponent(GameFrame gameFrame) {
+        this.color = null;
+        this.row = 0;
+        this.col = 0;
+        isSelected = true;
+        setEnabled(false);
+        this.owner = gameFrame;
+
+    }
+
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -50,6 +60,7 @@ public class BoxComponent extends JComponent {
             border = BorderFactory.createLineBorder(Color.darkGray, 1);
         }
         this.setBorder(border);
+        this.setOpaque(true);
     }
 
     public void setSelected(boolean selected) {
@@ -84,6 +95,7 @@ public class BoxComponent extends JComponent {
         }else if(this.owner.getSelectedBox() == this){
 
             this.setSelected(false);
+            this.owner.setSelectedBox(this.owner.getBoxes().getLast());
 
         }else if(this.owner.getSelectedBox() == null){
 
