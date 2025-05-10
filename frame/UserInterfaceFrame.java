@@ -4,6 +4,8 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
+
 import record.*;
 
 import static frame.theme.Style.styleBtn;
@@ -98,8 +100,16 @@ public class UserInterfaceFrame extends JFrame {
         styleBtn(loadGameButton);
         buttonPanel.add(loadGameButton);
         loadGameButton.addActionListener(e -> {
-            System.out.println("Load Game button clicked.");
-            JOptionPane.showMessageDialog(this, "Load Game functionality not yet implemented.", "Load Game", JOptionPane.INFORMATION_MESSAGE);
+
+            JFileChooser fileChooser = new JFileChooser(this);
+            fileChooser.setDialogTitle("Select a save file");
+            fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+            fileChooser.setAcceptAllFileFilterUsed(false);
+            fileChooser.addChoosableFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("Save files", "save"));
+
+            File selectedFile = fileChooser.getSelectedFile();
+
+
         });
     }
 

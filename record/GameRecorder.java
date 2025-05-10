@@ -30,12 +30,6 @@ public class GameRecorder implements Serializable {
 
     }
 
-    public Move withdrawMove() {
-
-        return MOVES.pop();
-
-    }
-
     public Stack<Move> getMoves() {
         return MOVES;
     }
@@ -97,10 +91,6 @@ public class GameRecorder implements Serializable {
 
         return save;
 
-    }
-
-    public int[][] getINITIAL_MAP() {
-        return INITIAL_MAP;
     }
 
     public User getUser() {

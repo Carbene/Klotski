@@ -128,6 +128,7 @@ public class GameFrame extends JFrame {
     private void updateTimerLabel() {
         int minutes = timeElapsed / 60;
         int seconds = timeElapsed % 60;
+        this.logicController.setTime(minutes * 60 + seconds);
         timerLabel.setText(String.format("Time: %02d:%02d", minutes, seconds));
     }
 
@@ -335,8 +336,6 @@ public class GameFrame extends JFrame {
 
     }
 
-
-
     private void doMove(Direction direction,boolean isWithdraw) {
         int row = selectedBox.getRow();
         int col = selectedBox.getCol();
@@ -391,6 +390,7 @@ public class GameFrame extends JFrame {
     private void afterMove(Direction direction) {
         stepCount++;
         updateStepLabel();
+        this.logicController.stepAccumulate();
         this.gameRecorder.record(this.selectedBox,direction);
         if(this.logicController.isGameOver()){
             JOptionPane.showMessageDialog(this, "You win within" + stepCount + "steps!" +'\n' + "Your best record is ");

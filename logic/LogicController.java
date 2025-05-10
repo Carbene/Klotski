@@ -10,6 +10,9 @@ public class LogicController {
     private Level level;
     private GameFrame frame;
     private GameRecorder gameRecorder;
+    private User user;
+    private int step;
+    private int time;
     private final static int HEIGHT = 4;
     private final static int WIDTH = 5;
 
@@ -17,6 +20,7 @@ public class LogicController {
 
         this.map = LogicController.copyMap(level);
         this.frame = frame;
+        this.user = user;
         this.gameRecorder = new GameRecorder(map,frame.getLevelSelectionFrame().getUser());
 
     }
@@ -31,7 +35,12 @@ public class LogicController {
 
     public boolean isGameOver() {
         if(map[1][3] == 4 && map[2][3] == 4 && map[1][4] == 4 && map[2][4] == 4) {
-            /*if(this.gameRecorder.getUser().getBestRecord()[level])*/
+            if(this.user.getBestRecord()[level.getCODE()][0] < step) {
+                this.user.getBestRecord()[level.getCODE()][0] = this.step;
+            }
+            if(this.user.getBestRecord()[level.getCODE()][1] > time && time != 0) {
+                this.user.getBestRecord()[level.getCODE()][1] = this.time;
+            }
 
             return true;
         }
@@ -48,4 +57,11 @@ public class LogicController {
         return map;
     }
 
+    public void stepAccumulate() {
+        this.step++;
+    }
+
+    public void setTime(int time) {
+        this.time = time;
+    }
 }
