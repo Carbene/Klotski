@@ -6,6 +6,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
 
+import logic.LogicController;
 import record.*;
 
 import static frame.theme.Style.styleBtn;
@@ -19,9 +20,9 @@ public class UserInterfaceFrame extends JFrame {
     private JPanel buttonPanel;
 
 
-    public UserInterfaceFrame(LoginFrame loginFrame, User owner) {
+    public UserInterfaceFrame(LoginFrame loginFrame, User user) {
         this.loginFrame = loginFrame;
-        this.user = owner;
+        this.user = user;
 
         initializeUserInterface();
         getBackgroundPanel();
@@ -99,18 +100,7 @@ public class UserInterfaceFrame extends JFrame {
         JButton loadGameButton = new JButton("Load an Old Game");
         styleBtn(loadGameButton);
         buttonPanel.add(loadGameButton);
-        /*loadGameButton.addActionListener(e -> {
-
-            JFileChooser fileChooser = new JFileChooser(this);
-            fileChooser.setDialogTitle("Select a save file");
-            fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-            fileChooser.setAcceptAllFileFilterUsed(false);
-            fileChooser.addChoosableFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("Save files", "save"));
-
-            File selectedFile = fileChooser.getSelectedFile();
-
-
-        });*/
+        loadGameButton.addActionListener(e -> {this.loadGame();});
     }
 
     private void setBGMButton() {
@@ -133,4 +123,17 @@ public class UserInterfaceFrame extends JFrame {
         });
     }
 
+    private void loadGame() {
+        LogicController logicController = LogicController.loadGame(this);
+        if(logicController != null) {
+            this.setVisible(false);
+            GameFrame gameFrame = new GameFrame(this, logicController);
+            gameFrame.setVisible(true);
+            this.setVisible(false);
+        }
+    }
+
+    public User getUser() {
+        return user;
+    }
 }

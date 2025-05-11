@@ -3,7 +3,6 @@ package record;
 import logic.LogicController;
 import view.Direction;
 import view.BoxComponent;
-import view.*;
 
 public class Move {
 
@@ -27,7 +26,7 @@ public class Move {
         return direction;
     }
 
-    public static boolean checkMoveValidity(int id, int nextRow, int nextCol, Direction direction, LogicController controller) {
+    public static boolean validateMove(int id, int nextRow, int nextCol, Direction direction, LogicController controller) {
 
         // this method used to ensure the move is valid so collision to the other block or the boundary will not happen.
 

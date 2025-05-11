@@ -54,6 +54,25 @@ public class GameFrame extends JFrame {
 
     }
 
+    public GameFrame(UserInterfaceFrame userInterfaceFrame,LogicController logicController) {
+        enableEvents(AWTEvent.KEY_EVENT_MASK);
+        enableEvents(AWTEvent.MOUSE_EVENT_MASK);
+
+        this.logicController = logicController;
+        this.user = userInterfaceFrame.getUser();
+        this.logicController = logicController;
+        this.isTimed = logicController.getTime() != 0;
+
+        setTitle("Klotski Game");
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setUndecorated(true);
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
+
+        getBackgroundPanel();
+        reloadKlotskiBoard(LogicController.copyMap(this.logicController.getMap()));
+        setListener();
+    }
+
     private void initializeKlotskiBoard(Level map) {
 
         int[][] mapInitializer = LogicController.copyMap(map);
@@ -99,6 +118,43 @@ public class GameFrame extends JFrame {
         klotskiBoardPanel.repaint();
         klotskiBoardPanel.setFocusable(true);
         this.boxes = boxes;
+    }
+
+    private void reloadKlotskiBoard(int[][] map) {
+        ArrayList<BoxComponent> boxes = new ArrayList<>();
+
+        for (int i = 0; i < map.length; i++) {
+            for (int j = 0; j < map[0].length; j++) {
+                BoxComponent box = null;
+                if (map[i][j] == 1) {
+                    box = new BoxComponent(Color.ORANGE, i, j, this);
+                    box.setSize(box.GRIDSIZE, box.GRIDSIZE);
+                    map[i][j] = 0;
+                } else if (map[i][j] == 2) {
+                    box = new BoxComponent(Color.GREEN, i, j, this);
+                    box.setSize(box.GRIDSIZE * 2, box.GRIDSIZE);
+                    map[i][j] = 0;
+                    map[i][j + 1] = 0;
+                } else if (map[i][j] == 3) {
+                    box = new BoxComponent(Color.BLUE, i, j, this);
+                    box.setSize(box.GRIDSIZE, box.GRIDSIZE * 2);
+                    map[i][j] = 0;
+                    map[i + 1][j] = 0;
+                } else if (map[i][j] == 4) {
+                    box = new BoxComponent(Color.RED, i, j, this);
+                    box.setSize(box.GRIDSIZE * 2, box.GRIDSIZE * 2);
+                    map[i][j] = 0;
+                    map[i + 1][j] = 0;
+                    map[i][j + 1] = 0;
+                    map[i + 1][j + 1] = 0;
+                }
+                if (box != null) {
+                    klotskiBoardPanel.add(box);
+                    box.setLocation(j * box.GRIDSIZE + 2, i * box.GRIDSIZE + 2);
+                    boxes.add(box);
+                }
+            }
+        }
     }
 
     private void startTimer() {
@@ -221,26 +277,26 @@ public class GameFrame extends JFrame {
         JPanel controlPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 10));
         controlPanel.setOpaque(false);
         JButton saveButton = new JButton("Save Game");
-        JButton reloadButton = new JButton("Reload");
         JButton withdrawButton = new JButton("Withdraw");
+        JButton reloadButton = new JButton("Reload");
         JButton answerButton = new JButton("Show Answer");
         JButton quitButton = new JButton("Quit");
 
         styleBtn(saveButton);
-        styleBtn(reloadButton);
         styleBtn(withdrawButton);
+        styleBtn(reloadButton);
         styleBtn(answerButton);
         styleBtn(quitButton);
 
         controlPanel.add(saveButton);
-        controlPanel.add(reloadButton);
         controlPanel.add(withdrawButton);
+        controlPanel.add(reloadButton);
         controlPanel.add(answerButton);
         controlPanel.add(quitButton);
 
         saveButton.addActionListener(e -> saveGame());
+        withdrawButton.addActionListener(e -> withdrawMove());
         reloadButton.addActionListener(e -> reloadGame());
-        withdrawButton.addActionListener(e -> withdrawGame());
         answerButton.addActionListener(e -> showAnswer());
         quitButton.addActionListener(e -> quitGame());
 
@@ -274,21 +330,23 @@ public class GameFrame extends JFrame {
     private void reloadGame() {
 
         for(int i = this.logicController.getMoves().size(); i > 0; i--){
-            withdrawGame();
+            withdrawMove();
         }
 
     }
 
-    private void withdrawGame() {
+    private void withdrawMove() {
 
         if(this.logicController.getMoves().isEmpty()){
             JOptionPane.showMessageDialog(this, "No moves to withdraw.");
             return;
         }else {
             Move withdrawedMove = this.logicController.getMoves().pop();
+            this.selectedBox.setSelected(false);
             this.selectedBox = withdrawedMove.getBox();
             Direction direction = Direction.getOpposite(withdrawedMove.getDirection());
             doMove(direction, true);
+            this.selectedBox.setSelected(false);
             this.selectedBox = boxes.getLast();
             repaint();
         }
@@ -337,14 +395,14 @@ public class GameFrame extends JFrame {
         int row = selectedBox.getRow();
         int col = selectedBox.getCol();
         int[][] map = logicController.getMap();
-        if (this.logicController.getMap()[row][col] == 1 && Move.checkMoveValidity(1, row + direction.getRow(), col + direction.getCol(), direction, this.logicController)) {
+        if (this.logicController.getMap()[row][col] == 1 && Move.validateMove(1, row + direction.getRow(), col + direction.getCol(), direction, this.logicController)) {
             map[row][col] = 0;
             map[row + direction.getRow()][col + direction.getCol()] = 1;
             boxRepaint(row, col, row + direction.getRow(), col + direction.getCol(), selectedBox);
             if(!isWithdraw){
                 afterMove(direction);
             }
-        } else if (map[row][col] == 2 && Move.checkMoveValidity(2, row + direction.getRow(), col + direction.getCol(), direction, this.logicController)) {
+        } else if (map[row][col] == 2 && Move.validateMove(2, row + direction.getRow(), col + direction.getCol(), direction, this.logicController)) {
             map[row][col] = 0;
             map[row][col + 1] = 0;
             map[row + direction.getRow()][col + direction.getCol()] = 2;
@@ -353,7 +411,7 @@ public class GameFrame extends JFrame {
             if(!isWithdraw){
                 afterMove(direction);
             }
-        } else if (map[row][col] == 3 && Move.checkMoveValidity(3, row + direction.getRow(), col + direction.getCol(), direction, this.logicController)) {
+        } else if (map[row][col] == 3 && Move.validateMove(3, row + direction.getRow(), col + direction.getCol(), direction, this.logicController)) {
             map[row][col] = 0;
             map[row + 1][col] = 0;
             map[row + direction.getRow()][col + direction.getCol()] = 3;
@@ -362,11 +420,15 @@ public class GameFrame extends JFrame {
             if(!isWithdraw){
                 afterMove(direction);
             }
-        } else if (map[row][col] == 4 && Move.checkMoveValidity(4, row + direction.getRow(), col + direction.getCol(), direction, this.logicController)) {
+        } else if (map[row][col] == 4 && Move.validateMove(4, row + direction.getRow(), col + direction.getCol(), direction, this.logicController)) {
             map[row][col] = 0;
-            map[row][col - 1] = 0;
-            map[row + direction.getRow()][col - 1] = 4;
-            map[row + direction.getRow()][col - 2] = 4;
+            map[row][col + 1] = 0;
+            map[row + 1][col] = 0;
+            map[row + 1][col + 1] = 0;
+            map[row + direction.getRow()][col + direction.getCol()] = 4;
+            map[row + direction.getRow()][col + direction.getCol() + 1] = 4;
+            map[row + direction.getRow() + 1][col + direction.getCol()] = 4;
+            map[row + direction.getRow() + 1][col + direction.getCol() + 1] = 4;
             boxRepaint(row, col, row + direction.getRow(), col + direction.getCol(), selectedBox);
             if(!isWithdraw){
                 afterMove(direction);
