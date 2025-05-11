@@ -16,12 +16,14 @@ public class BoxComponent extends JComponent {
     private boolean isSelected;
     private GameFrame owner;
     public static final int GRIDSIZE = 100;
+    private int type;
 
 
-    public BoxComponent(Color color, int row, int col, GameFrame gameFrame) {
+    public BoxComponent(Color color, int row, int col, int type,GameFrame gameFrame) {
         this.color = color;
         this.row = row;
         this.col = col;
+        this.type = type;
         isSelected = false;
         setEnabled(true);
         setOpaque(false);
@@ -108,31 +110,16 @@ public class BoxComponent extends JComponent {
 
     }
 
-    /*private void doMove() {
+    public void setOwner(GameFrame owner) {
+        this.owner = owner;
+    }
 
-        if(this.owner.getSelectedBox() != null){
+    public int getType() {
+        return type;
+    }
 
-            this.owner.doMove(this.row, this.col);
 
-        }
 
-    }*/
 
 }
 
-    /*public BoxComponent getBox(ArrayList<BoxComponent> boxes, int id) {
-
-        for (BoxComponent box : boxes) {
-
-            if(box.getId = id){
-
-                return box;
-
-            }
-
-        }
-
-        return null;
-
-    }
-}*/

@@ -1,12 +1,11 @@
 package logic;
 
-import frame.*;
+import frame.UserInterfaceFrame;
 import record.*;
 import view.*;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import java.awt.desktop.SystemEventListener;
 import java.io.*;
 import java.util.Stack;
 
@@ -64,10 +63,10 @@ public class LogicController implements Serializable {
         int[][] mapCopy = new int[map.length][map[0].length];
         for (int i = 0; i < map.length; i++) {
             for (int j = 0; j < map[0].length; j++) {
-                map[i][j] = map[i][j];
+                mapCopy[i][j] = map[i][j];
             }
         }
-        return map;
+        return mapCopy;
     }
 
     public void stepAccumulate() {
@@ -113,7 +112,7 @@ public class LogicController implements Serializable {
                 fileOut.close();
                 return true;
             } catch (Exception e) {
-                System.err.println(e);
+                e.getStackTrace();
             }
         }else{
             JOptionPane.showMessageDialog(null, "Please login to save your game", "Error", JOptionPane.ERROR_MESSAGE);
@@ -134,21 +133,22 @@ public class LogicController implements Serializable {
             try{
                 FileInputStream fileInput = new FileInputStream(filePath);
                 ObjectInputStream objectInput = new ObjectInputStream(fileInput);
-                if(objectInput.readObject() instanceof LogicController) {
-                    LogicController controller = (LogicController) objectInput.readObject();
+                Object o = objectInput.readObject();
+                if(o instanceof LogicController) {
+                    LogicController controller = (LogicController)o;
                     if(controller.user.getId().equals(userInterfaceFrame.getUser().getId())) {
                         return controller;
                     } else {
-                        JOptionPane.showMessageDialog(userInterfaceFrame, "This is not your save file", "Error", JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(null, "This is not your save file", "Error", JOptionPane.ERROR_MESSAGE);
                         return null;
                     }
                 } else {
                     System.err.println("This is not a save file.");
-                    JOptionPane.showMessageDialog(userInterfaceFrame, "This is not a save file", "Error", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(null, "This is not a save file", "Error", JOptionPane.ERROR_MESSAGE);
                     return null;
                 }
             }catch(Exception e){
-                System.err.println(e);
+                e.printStackTrace();
             }
         }
         return null;

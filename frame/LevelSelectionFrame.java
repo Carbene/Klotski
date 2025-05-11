@@ -48,13 +48,13 @@ public class LevelSelectionFrame extends JDialog {
         }
         if(isTimed){
             this.userInterfaceFrame.setVisible(false);
-            GameFrame gameFrame = new GameFrame(this, user,setLevel(Integer.parseInt(selectedLevel)), true,userInterfaceFrame.getMusicPlayer());
+            GameFrame gameFrame = new GameFrame(this,this.userInterfaceFrame,user,setLevel(Integer.parseInt(selectedLevel)), true,userInterfaceFrame.getMusicPlayer());
 
             gameFrame.setVisible(true);
             this.setVisible(false);
         }else{
             this.userInterfaceFrame.setVisible(false);
-            GameFrame gameFrame = new GameFrame(this, user,setLevel(Integer.parseInt(selectedLevel)), false,userInterfaceFrame.getMusicPlayer());
+            GameFrame gameFrame = new GameFrame(this,this.userInterfaceFrame, user,setLevel(Integer.parseInt(selectedLevel)), false,userInterfaceFrame.getMusicPlayer());
 
             gameFrame.setVisible(true);
             this.setVisible(false);

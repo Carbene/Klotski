@@ -33,9 +33,10 @@ public class GameFrame extends JFrame {
     private User user;
     private MusicPlayer musicPlayer;
     private boolean isSaved = false;
+    private UserInterfaceFrame userInterfaceFrame;
 
 
-    public GameFrame(LevelSelectionFrame selectionFrame,User user,Level level, boolean isTimed, MusicPlayer musicPlayer) {
+    public GameFrame(LevelSelectionFrame selectionFrame,UserInterfaceFrame userInterfaceFrame,User user,Level level, boolean isTimed, MusicPlayer musicPlayer) {
         enableEvents(AWTEvent.KEY_EVENT_MASK);
         enableEvents(AWTEvent.MOUSE_EVENT_MASK);
 
@@ -44,6 +45,7 @@ public class GameFrame extends JFrame {
         this.user = user;
         this.logicController = new LogicController(level,user,isTimed);
         this.musicPlayer = musicPlayer;
+        this.userInterfaceFrame = userInterfaceFrame;
 
         setTitle("Klotski Game");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -88,21 +90,21 @@ public class GameFrame extends JFrame {
             for (int j = 0; j < mapInitializer[0].length; j++) {
                 BoxComponent box = null;
                 if (mapInitializer[i][j] == 1) {
-                    box = new BoxComponent(Color.ORANGE, i, j, this);
+                    box = new BoxComponent(Color.ORANGE, i, j,1, this);
                     box.setSize(box.GRIDSIZE, box.GRIDSIZE);
                     mapInitializer[i][j] = 0;
                 } else if (mapInitializer[i][j] == 2) {
-                    box = new BoxComponent(Color.GREEN, i, j, this);
+                    box = new BoxComponent(Color.GREEN, i, j,2, this);
                     box.setSize(box.GRIDSIZE * 2, box.GRIDSIZE);
                     mapInitializer[i][j] = 0;
                     mapInitializer[i][j + 1] = 0;
                 } else if (mapInitializer[i][j] == 3) {
-                    box = new BoxComponent(Color.BLUE, i, j, this);
+                    box = new BoxComponent(Color.BLUE, i, j,3, this);
                     box.setSize(box.GRIDSIZE, box.GRIDSIZE * 2);
                     mapInitializer[i][j] = 0;
                     mapInitializer[i + 1][j] = 0;
                 } else if (mapInitializer[i][j] == 4) {
-                    box = new BoxComponent(Color.RED, i, j, this);
+                    box = new BoxComponent(Color.RED, i, j,4, this);
                     box.setSize(box.GRIDSIZE * 2, box.GRIDSIZE * 2);
                     mapInitializer[i][j] = 0;
                     mapInitializer[i + 1][j] = 0;
@@ -126,27 +128,27 @@ public class GameFrame extends JFrame {
     }
 
     private void reloadKlotskiBoard(int[][] map) {
-        ArrayList<BoxComponent> boxes = new ArrayList<>();
+        this.boxes = new ArrayList<>();
 
         for (int i = 0; i < map.length; i++) {
             for (int j = 0; j < map[0].length; j++) {
                 BoxComponent box = null;
                 if (map[i][j] == 1) {
-                    box = new BoxComponent(Color.ORANGE, i, j, this);
+                    box = new BoxComponent(Color.ORANGE, i, j,1, this);
                     box.setSize(box.GRIDSIZE, box.GRIDSIZE);
                     map[i][j] = 0;
                 } else if (map[i][j] == 2) {
-                    box = new BoxComponent(Color.GREEN, i, j, this);
+                    box = new BoxComponent(Color.GREEN, i, j,2, this);
                     box.setSize(box.GRIDSIZE * 2, box.GRIDSIZE);
                     map[i][j] = 0;
                     map[i][j + 1] = 0;
                 } else if (map[i][j] == 3) {
-                    box = new BoxComponent(Color.BLUE, i, j, this);
+                    box = new BoxComponent(Color.BLUE, i, j,3, this);
                     box.setSize(box.GRIDSIZE, box.GRIDSIZE * 2);
                     map[i][j] = 0;
                     map[i + 1][j] = 0;
                 } else if (map[i][j] == 4) {
-                    box = new BoxComponent(Color.RED, i, j, this);
+                    box = new BoxComponent(Color.RED, i, j,4, this);
                     box.setSize(box.GRIDSIZE * 2, box.GRIDSIZE * 2);
                     map[i][j] = 0;
                     map[i + 1][j] = 0;
@@ -160,6 +162,12 @@ public class GameFrame extends JFrame {
                 }
             }
         }
+        this.repaint();
+        boxes.add(new BoxComponent(this));
+        this.selectedBox = boxes.getLast();
+        klotskiBoardPanel.revalidate();
+        klotskiBoardPanel.repaint();
+        klotskiBoardPanel.setFocusable(true);
     }
 
     private void startTimer() {
@@ -173,13 +181,11 @@ public class GameFrame extends JFrame {
             updateTimerLabel();
         });
         gameTimer.start();
-        System.out.println("Timer started.");
     }
 
     private void stopTimer() {
         if (gameTimer != null && gameTimer.isRunning()) {
             gameTimer.stop();
-            System.out.println("Timer stopped.");
         }
     }
 
@@ -330,6 +336,12 @@ public class GameFrame extends JFrame {
         this.klotskiBoardPanel.setBackground(new Color(200, 200, 200, 200));
         this.klotskiBoardPanel.setPreferredSize(new Dimension(500, 400));
         this.klotskiBoardPanel.add(new KeyBindingExample());
+        addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentShown(ComponentEvent e) {
+                klotskiBoardPanel.requestFocusInWindow();
+            }
+        });
     }
 
     private JPanel getBoardContainer() {
@@ -356,7 +368,7 @@ public class GameFrame extends JFrame {
         }else {
             Move withdrawedMove = this.logicController.getMoves().pop();
             this.selectedBox.setSelected(false);
-            this.selectedBox = withdrawedMove.getBox();
+            this.selectedBox = this.getBox(withdrawedMove.getCoordinate()[0],  withdrawedMove.getCoordinate()[1], withdrawedMove.getType());
             Direction direction = Direction.getOpposite(withdrawedMove.getDirection());
             doMove(direction, true);
             this.selectedBox.setSelected(false);
@@ -402,17 +414,20 @@ public class GameFrame extends JFrame {
             @Override
             public void windowClosed(WindowEvent e) {
                 stopTimer();
-                if (!selectionFrame.isVisible()) {
-                    selectionFrame.setVisible(true);
+                if(selectionFrame != null){
+                    if(!selectionFrame.isVisible() && !userInterfaceFrame.isVisible()){
+                        selectionFrame.setVisible(true);
+                        userInterfaceFrame.setVisible(true);
+                    }
+                }
+                else{
+                    if(!userInterfaceFrame.isVisible()){
+                        userInterfaceFrame.setVisible(true);
+                    }
                 }
             }
         });
-        addComponentListener(new ComponentAdapter() {
-            @Override
-            public void componentShown(ComponentEvent e) {
-                klotskiBoardPanel.requestFocusInWindow();
-            }
-        });
+
     }
 
     private void doMove(Direction direction,boolean isWithdraw) {
@@ -464,8 +479,8 @@ public class GameFrame extends JFrame {
 
         // this method used to repaint the block to implement the move action
 
-        selectedBox.setCol(nextCol);
         selectedBox.setRow(nextRow);
+        selectedBox.setCol(nextCol);
         selectedBox.setLocation(selectedBox.getCol() * selectedBox.GRIDSIZE + 2, selectedBox.getRow() * selectedBox.GRIDSIZE + 2);
         selectedBox.repaint();
     }
@@ -527,7 +542,6 @@ public class GameFrame extends JFrame {
             actionMap.put("escape", new AbstractAction() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    System.out.println("Escape pressed");
                     quitGame();
                 }
             });
@@ -546,5 +560,14 @@ public class GameFrame extends JFrame {
 
     public ArrayList<BoxComponent> getBoxes() {
         return boxes;
+    }
+
+    public BoxComponent getBox(int row, int col,int type) {
+        for (BoxComponent box : boxes) {
+            if (box.getRow() == row && box.getCol() == col && box.getType() == type) {
+                return box;
+            }
+        }
+        return null;
     }
 }

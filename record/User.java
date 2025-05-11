@@ -15,8 +15,8 @@ public class User implements Serializable {
     public User(String id, String password) {
         this.id = id;
         this.password = password;
-        User.serialize(this);
         this.bestRecord = new int[Level.values().length][2];
+        User.serialize(this);
     }
 
     public User(){
@@ -88,7 +88,7 @@ public class User implements Serializable {
     }
 
     public static int getBestRecord(User user,int level, int mode) {
-        return user.bestRecord[level][mode];
+        return user.bestRecord[level - 1][mode];
     }
 
     public static void setBestRecord(Level level, User user, int mode, int achievement){

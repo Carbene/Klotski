@@ -17,7 +17,7 @@ public class UserInterfaceFrame extends JFrame {
     private User user;
     private BackgroundPanel background;
     private JPanel buttonPanel;
-    private MusicPlayer musicPlayer;
+    private transient MusicPlayer musicPlayer;
 
 
     public UserInterfaceFrame(LoginFrame loginFrame, User user) {

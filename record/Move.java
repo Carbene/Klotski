@@ -4,22 +4,21 @@ import logic.LogicController;
 import view.Direction;
 import view.BoxComponent;
 
-public class Move {
+import java.io.Serializable;
 
-    private BoxComponent selectedBox;
+public class Move implements Serializable {
+
+    private int[] coordinateInfo = new int[2];
+    private int type;
     private Direction direction;
     private static final int HEIGHT = 4;
     private static final int WIDTH = 5;
 
     public Move(BoxComponent selectedBoxComponent, Direction direction) {
-
-        this.selectedBox = selectedBoxComponent;
         this.direction = direction;
-
-    }
-
-    public BoxComponent getBox() {
-        return selectedBox;
+        this.type = selectedBoxComponent.getType();
+        coordinateInfo[0] = selectedBoxComponent.getRow();
+        coordinateInfo[1] = selectedBoxComponent.getCol();
     }
 
     public Direction getDirection() {
@@ -65,6 +64,14 @@ public class Move {
 
     private static boolean checkInWidthSize(int col) {
         return col >= 0 && col < WIDTH;
+    }
+
+    public int getType() {
+        return type;
+    }
+
+    public int[] getCoordinate() {
+        return coordinateInfo;
     }
 
 }
