@@ -13,7 +13,7 @@ import static frame.theme.Style.styleBtn;
 public class UserInterfaceFrame extends JFrame {
     private LoginFrame loginFrame;
     private String selectedLevel = null;
-    private boolean bgmEnabled = true;
+    private boolean bgmEnabled = false;
     private User user;
     private BackgroundPanel background;
     private JPanel buttonPanel;
