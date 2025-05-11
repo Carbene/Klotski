@@ -14,7 +14,6 @@ public class LogicController implements Serializable {
 
     private int[][] map;
     private Level level;
-    private GameFrame frame;
     private User user;
     private int step;
     private int time;
@@ -23,9 +22,8 @@ public class LogicController implements Serializable {
     private final static int HEIGHT = 4;
     private final static int WIDTH = 5;
 
-    public LogicController(Level level,User user, GameFrame frame,boolean isTimed) {
+    public LogicController(Level level,User user,boolean isTimed) {
         this.map = LogicController.copyMap(level);
-        this.frame = frame;
         this.user = user;
         this.moves = new Stack<>();
         this.isTimed = isTimed;
@@ -101,7 +99,7 @@ public class LogicController implements Serializable {
             JFileChooser fileChooser = new JFileChooser();
             fileChooser.setDialogTitle("Find your directory to save");
             fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-            int result = fileChooser.showSaveDialog(controller.frame);
+            int result = fileChooser.showSaveDialog(null);
             if (result == JFileChooser.CANCEL_OPTION) {
                 File file = fileChooser.getSelectedFile();
             }
@@ -129,28 +127,30 @@ public class LogicController implements Serializable {
         fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         fileChooser.setAcceptAllFileFilterUsed(false);
         fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("Save files", "save"));
-        String filePath = fileChooser.getSelectedFile().getAbsolutePath();
-        try{
-            FileInputStream fileInput = new FileInputStream(filePath);
-            ObjectInputStream objectInput = new ObjectInputStream(fileInput);
-            if(objectInput.readObject() instanceof LogicController) {
-                LogicController controller = (LogicController) objectInput.readObject();
-                if(controller.user.getId().equals(userInterfaceFrame.getUser().getId())) {
-                    return controller;
+        int result = fileChooser.showOpenDialog(null);
+        if(result == JFileChooser.APPROVE_OPTION) {
+            File file = fileChooser.getSelectedFile();
+            String filePath = file.getAbsolutePath();
+            try{
+                FileInputStream fileInput = new FileInputStream(filePath);
+                ObjectInputStream objectInput = new ObjectInputStream(fileInput);
+                if(objectInput.readObject() instanceof LogicController) {
+                    LogicController controller = (LogicController) objectInput.readObject();
+                    if(controller.user.getId().equals(userInterfaceFrame.getUser().getId())) {
+                        return controller;
+                    } else {
+                        JOptionPane.showMessageDialog(userInterfaceFrame, "This is not your save file", "Error", JOptionPane.ERROR_MESSAGE);
+                        return null;
+                    }
                 } else {
-                    JOptionPane.showMessageDialog(userInterfaceFrame, "This is not your save file", "Error", JOptionPane.ERROR_MESSAGE);
+                    System.err.println("This is not a save file.");
+                    JOptionPane.showMessageDialog(userInterfaceFrame, "This is not a save file", "Error", JOptionPane.ERROR_MESSAGE);
                     return null;
                 }
-            } else {
-                System.err.println("This is not a save file.");
-                JOptionPane.showMessageDialog(userInterfaceFrame, "This is not a save file", "Error", JOptionPane.ERROR_MESSAGE);
-                return null;
+            }catch(Exception e){
+                System.err.println(e);
             }
-
-        }catch(Exception e){
-            System.err.println(e);
         }
-
         return null;
     }
 

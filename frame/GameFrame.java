@@ -42,7 +42,7 @@ public class GameFrame extends JFrame {
         this.selectionFrame = selectionFrame;
         this.isTimed = isTimed;
         this.user = user;
-        this.logicController = new LogicController(level,user,this,isTimed);
+        this.logicController = new LogicController(level,user,isTimed);
         this.musicPlayer = musicPlayer;
 
         setTitle("Klotski Game");

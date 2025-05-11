@@ -63,20 +63,14 @@ public class User implements Serializable {
     public static ArrayList<User> deserializeList() {
         ArrayList<User> users = new ArrayList<>();
         File directory = new File(User.DIRECTORY);
-
-        if (!directory.exists() || !directory.isDirectory()) {
-            return users;
-        }
-
         File[] fileList = directory.listFiles();
-
         if (fileList == null) {
             return users;
         }
 
         for (File userFile : fileList) {
             if (userFile.isFile()) {
-                User deserializedUser = deserialize(userFile.getAbsolutePath());
+                User deserializedUser = deserialize(userFile.getName());
                 if (deserializedUser != null) {
                     users.add(deserializedUser);
                 }
