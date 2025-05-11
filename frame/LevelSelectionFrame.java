@@ -30,9 +30,9 @@ public class LevelSelectionFrame extends JDialog {
 
     private void updatePreview() {
         previewLabel.setText(this.selectedLevel);
-        if(this.user.getBestRecord() != null) {
-            achievementStepsLabel.setText(this.user.getBestRecord()[Integer.parseInt(selectedLevel)][0] == 0 ?"Please first play the game" : "Best: " + this.user.getBestRecord()[Integer.parseInt(selectedLevel)][0] + " Steps");
-            achivementTimeLabel.setText(this.user.getBestRecord()[Integer.parseInt(selectedLevel)][1] == 0 ?"Please first play the game" : "Best: " + this.user.getBestRecord()[Integer.parseInt(selectedLevel)][1] + " Seconds");
+        if(this.user.getId() != "Visitor") {
+            achievementStepsLabel.setText(User.getBestRecord(user,Integer.parseInt(selectedLevel),0) == 0 ?"Please first play the game" : "Best: " + User.getBestRecord(user,Integer.parseInt(selectedLevel),0) + " Steps");
+            achivementTimeLabel.setText(User.getBestRecord(user,Integer.parseInt(selectedLevel),1) == 0 ?"Please first play the game" : "Best: " + User.getBestRecord(user,Integer.parseInt(selectedLevel),1) + " Seconds");
         }else{
             achievementStepsLabel.setText("Please login to see your best record");
             achivementTimeLabel.setText("Please login to see your best record");
@@ -48,13 +48,13 @@ public class LevelSelectionFrame extends JDialog {
         }
         if(isTimed){
             this.userInterfaceFrame.setVisible(false);
-            GameFrame gameFrame = new GameFrame(this, user,setLevel(Integer.parseInt(selectedLevel)), true);
+            GameFrame gameFrame = new GameFrame(this, user,setLevel(Integer.parseInt(selectedLevel)), true,userInterfaceFrame.getMusicPlayer());
 
             gameFrame.setVisible(true);
             this.setVisible(false);
         }else{
             this.userInterfaceFrame.setVisible(false);
-            GameFrame gameFrame = new GameFrame(this, user,setLevel(Integer.parseInt(selectedLevel)), false);
+            GameFrame gameFrame = new GameFrame(this, user,setLevel(Integer.parseInt(selectedLevel)), false,userInterfaceFrame.getMusicPlayer());
 
             gameFrame.setVisible(true);
             this.setVisible(false);
@@ -82,6 +82,7 @@ public class LevelSelectionFrame extends JDialog {
             levelButton.addActionListener(e -> {
                 this.selectedLevel = level;
                 updatePreview();
+                this.userInterfaceFrame.getMusicPlayer().playSoundEffectPressingButton();
             });
             levelListPanel.add(levelButton);
             levelListPanel.add(Box.createRigidArea(new Dimension(0, 10)));
@@ -107,8 +108,13 @@ public class LevelSelectionFrame extends JDialog {
         gameStartPanel.add(timedGameButton);
         gameStartPanel.add(Box.createHorizontalGlue());
 
-        generalGameButton.addActionListener(e -> startGame(false));
-        timedGameButton.addActionListener(e -> startGame(true));
+        generalGameButton.addActionListener(e -> {
+            startGame(false);
+            userInterfaceFrame.getMusicPlayer().playSoundEffectPressingButton();
+        });
+        timedGameButton.addActionListener(e -> {startGame(true);
+            userInterfaceFrame.getMusicPlayer().playSoundEffectPressingButton();
+        });
 
         return gameStartPanel;
     }
@@ -185,10 +191,6 @@ public class LevelSelectionFrame extends JDialog {
         background.add(getWrapperPanel(), BorderLayout.NORTH);
 
         return background;
-    }
-
-    public User getUser() {
-        return this.user;
     }
 
 }

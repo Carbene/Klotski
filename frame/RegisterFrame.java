@@ -73,7 +73,9 @@ public class RegisterFrame extends JFrame {
             if(e.getSource() == registerButton) {
                 String username = nameField.getText();
                 String password = new String(passwordField.getPassword());
-                User user = new User(username, password);
+                if(!User.registerUser(username, password)) {
+
+                }
                 this.setVisible(false);
                 this.loginFrame.setVisible(true);
             }

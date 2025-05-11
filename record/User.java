@@ -2,6 +2,7 @@ package record;
 
 import view.Level;
 
+import javax.swing.*;
 import java.io.*;
 import java.util.ArrayList;
 
@@ -92,19 +93,25 @@ public class User implements Serializable {
         return password;
     }
 
-    public int[][] getBestRecord() {
-        return bestRecord;
+    public static int getBestRecord(User user,int level, int mode) {
+        return user.bestRecord[level][mode];
     }
 
     public static void setBestRecord(Level level, User user, int mode, int achievement){
-
         user.bestRecord[level.ordinal()][mode] = achievement;
-
     }
 
-    public static int getBestRecord(Level level, User user, int mode){
-
-        return user.bestRecord[level.ordinal()][mode];
-
+    public static boolean registerUser(String id,String password) {
+        if(id == null || password == null || id.isEmpty() || password.isEmpty()) {
+            return false;
+        }
+        for(User user : User.deserializeList()) {
+            if(user.getId().equals(id)) {
+                JOptionPane.showMessageDialog(null, "Username has already been taken, please rethink one!");
+                return false;
+            }
+        }
+        User user = new User(id, password);
+        return true;
     }
 }

@@ -4,7 +4,6 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.File;
 
 import logic.LogicController;
 import record.*;
@@ -18,24 +17,27 @@ public class UserInterfaceFrame extends JFrame {
     private User user;
     private BackgroundPanel background;
     private JPanel buttonPanel;
+    private MusicPlayer musicPlayer;
 
 
     public UserInterfaceFrame(LoginFrame loginFrame, User user) {
         this.loginFrame = loginFrame;
         this.user = user;
+        this.musicPlayer = new MusicPlayer();
 
         initializeUserInterface();
         getBackgroundPanel();
+        shiftPlayStatus();
 
     }
 
     private void shiftPlayStatus() {
-        if (this.bgmEnabled) {
-            // TODO: Implement BGM disabling logic
+        bgmEnabled = !bgmEnabled;
+        if (bgmEnabled) {
+            musicPlayer.playBGM();
         } else {
-            // TODO: Implement BGM enabling logic
+            musicPlayer.stopBGM();
         }
-        // Potentially update button text or appearance
     }
 
     private void initializeUserInterface() {
@@ -91,6 +93,7 @@ public class UserInterfaceFrame extends JFrame {
         styleBtn(startGameButton);
         buttonPanel.add(startGameButton);
         startGameButton.addActionListener(e -> {
+            musicPlayer.playSoundEffectPressingButton();
             LevelSelectionFrame levelDialog = new LevelSelectionFrame(this,this.user);
             levelDialog.setVisible(true);
         });
@@ -100,7 +103,10 @@ public class UserInterfaceFrame extends JFrame {
         JButton loadGameButton = new JButton("Load an Old Game");
         styleBtn(loadGameButton);
         buttonPanel.add(loadGameButton);
-        loadGameButton.addActionListener(e -> {this.loadGame();});
+        loadGameButton.addActionListener(e -> {
+            musicPlayer.playSoundEffectPressingButton();
+            this.loadGame();
+        });
     }
 
     private void setBGMButton() {
@@ -108,6 +114,7 @@ public class UserInterfaceFrame extends JFrame {
         styleBtn(bgmButton);
         buttonPanel.add(bgmButton);
         bgmButton.addActionListener(e -> {
+            musicPlayer.playSoundEffectPressingButton();
             shiftPlayStatus();
         });
     }
@@ -117,6 +124,7 @@ public class UserInterfaceFrame extends JFrame {
         styleBtn(logoutButton);
         buttonPanel.add(logoutButton);
         logoutButton.addActionListener(e -> {
+            musicPlayer.playSoundEffectPressingButton();
             System.out.println("Logging out.");
             this.dispose();
             loginFrame.setVisible(true);
@@ -126,8 +134,9 @@ public class UserInterfaceFrame extends JFrame {
     private void loadGame() {
         LogicController logicController = LogicController.loadGame(this);
         if(logicController != null) {
+            musicPlayer.playSoundEffectPressingButton();
             this.setVisible(false);
-            GameFrame gameFrame = new GameFrame(this, logicController);
+            GameFrame gameFrame = new GameFrame(this, logicController,musicPlayer);
             gameFrame.setVisible(true);
             this.setVisible(false);
         }
@@ -135,5 +144,9 @@ public class UserInterfaceFrame extends JFrame {
 
     public User getUser() {
         return user;
+    }
+
+    public MusicPlayer getMusicPlayer() {
+        return musicPlayer;
     }
 }

@@ -18,15 +18,17 @@ public class LogicController implements Serializable {
     private User user;
     private int step;
     private int time;
+    private boolean isTimed;
     private final Stack<Move> moves;
     private final static int HEIGHT = 4;
     private final static int WIDTH = 5;
 
-    public LogicController( Level level,User user, GameFrame frame) {
+    public LogicController(Level level,User user, GameFrame frame,boolean isTimed) {
         this.map = LogicController.copyMap(level);
         this.frame = frame;
         this.user = user;
         this.moves = new Stack<>();
+        this.isTimed = isTimed;
     }
 
     public int getId(int row, int col) {
@@ -39,13 +41,12 @@ public class LogicController implements Serializable {
 
     public boolean isGameOver() {
         if(map[1][3] == 4 && map[2][3] == 4 && map[1][4] == 4 && map[2][4] == 4) {
-            if(this.user.getBestRecord()[level.getCODE()][0] < step) {
-                this.user.getBestRecord()[level.getCODE()][0] = this.step;
+            if(User.getBestRecord(user,level.getCODE(),0) > this.step) {
+                User.setBestRecord(level,user,0,step);
             }
-            if(this.user.getBestRecord()[level.getCODE()][1] > time && time != 0) {
-                this.user.getBestRecord()[level.getCODE()][1] = this.time;
+            if(User.getBestRecord(user,level.getCODE(),1) > this.time) {
+                User.setBestRecord(level,user,1,time);
             }
-
             return true;
         }
         return false;
@@ -95,21 +96,31 @@ public class LogicController implements Serializable {
         return moves;
     }
 
-    public static void saveGame(LogicController controller) {
-        JFileChooser fileChooser = new JFileChooser();
-        fileChooser.setDialogTitle("Find your directory to save");
-        fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        String filePath = fileChooser.getSelectedFile().getAbsolutePath();
-        String fileName = System.currentTimeMillis() + ".save";
-        try{
-            FileOutputStream fileOut = new FileOutputStream(filePath+ File.separator+fileName);
-            ObjectOutputStream objectOut = new ObjectOutputStream(fileOut);
-            objectOut.writeObject(controller);
-            objectOut.close();
-            fileOut.close();
-        } catch (Exception e) {
-            System.err.println(e);
+    public static boolean saveGame(LogicController controller,User user) {
+        if(!user.getId().equals("Visitor")) {
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setDialogTitle("Find your directory to save");
+            fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+            int result = fileChooser.showSaveDialog(controller.frame);
+            if (result == JFileChooser.CANCEL_OPTION) {
+                File file = fileChooser.getSelectedFile();
+            }
+            String filePath = fileChooser.getSelectedFile().getAbsolutePath();
+            String fileName = System.currentTimeMillis() + ".save";
+            try{
+                FileOutputStream fileOut = new FileOutputStream(filePath+ File.separator+fileName);
+                ObjectOutputStream objectOut = new ObjectOutputStream(fileOut);
+                objectOut.writeObject(controller);
+                objectOut.close();
+                fileOut.close();
+                return true;
+            } catch (Exception e) {
+                System.err.println(e);
+            }
+        }else{
+            JOptionPane.showMessageDialog(null, "Please login to save your game", "Error", JOptionPane.ERROR_MESSAGE);
         }
+        return false;
     }
 
     public static LogicController loadGame(UserInterfaceFrame userInterfaceFrame) {

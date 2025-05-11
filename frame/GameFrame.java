@@ -31,17 +31,19 @@ public class GameFrame extends JFrame {
     private ArrayList<BoxComponent> boxes;
     private LogicController logicController;
     private User user;
+    private MusicPlayer musicPlayer;
+    private boolean isSaved = false;
 
 
-    public GameFrame(LevelSelectionFrame selectionFrame,User user,Level level, boolean isTimed) {
+    public GameFrame(LevelSelectionFrame selectionFrame,User user,Level level, boolean isTimed, MusicPlayer musicPlayer) {
         enableEvents(AWTEvent.KEY_EVENT_MASK);
         enableEvents(AWTEvent.MOUSE_EVENT_MASK);
 
         this.selectionFrame = selectionFrame;
         this.isTimed = isTimed;
         this.user = user;
-        this.logicController = new LogicController(level,user, this);
-
+        this.logicController = new LogicController(level,user,this,isTimed);
+        this.musicPlayer = musicPlayer;
 
         setTitle("Klotski Game");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -54,7 +56,7 @@ public class GameFrame extends JFrame {
 
     }
 
-    public GameFrame(UserInterfaceFrame userInterfaceFrame,LogicController logicController) {
+    public GameFrame(UserInterfaceFrame userInterfaceFrame,LogicController logicController,MusicPlayer musicPlayer) {
         enableEvents(AWTEvent.KEY_EVENT_MASK);
         enableEvents(AWTEvent.MOUSE_EVENT_MASK);
 
@@ -62,6 +64,9 @@ public class GameFrame extends JFrame {
         this.user = userInterfaceFrame.getUser();
         this.logicController = logicController;
         this.isTimed = logicController.getTime() != 0;
+        this.musicPlayer = musicPlayer;
+        this.stepCount = logicController.getStep();
+        this.timeElapsed = logicController.getTime();
 
         setTitle("Klotski Game");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -264,10 +269,22 @@ public class GameFrame extends JFrame {
         gbc.weighty = 0.33;
         directionPanel.add(downButton, gbc);
 
-        upButton.addActionListener(e -> doMove(Direction.UP,false));
-        downButton.addActionListener(e -> doMove(Direction.DOWN,false));
-        leftButton.addActionListener(e -> doMove(Direction.LEFT,false));
-        rightButton.addActionListener(e -> doMove(Direction.RIGHT,false));
+        upButton.addActionListener(e -> {
+            doMove(Direction.UP, false);
+            this.musicPlayer.playSoundEffectPressingButton();
+        });
+        downButton.addActionListener(e -> {
+            doMove(Direction.DOWN,false);
+            this.musicPlayer.playSoundEffectPressingButton();
+        });
+        leftButton.addActionListener(e -> {
+            doMove(Direction.LEFT,false);
+            this.musicPlayer.playSoundEffectPressingButton();
+        });
+        rightButton.addActionListener(e -> {
+            doMove(Direction.RIGHT,false);
+            this.musicPlayer.playSoundEffectPressingButton();
+        });
 
         return directionPanel;
 
@@ -294,8 +311,12 @@ public class GameFrame extends JFrame {
         controlPanel.add(answerButton);
         controlPanel.add(quitButton);
 
-        saveButton.addActionListener(e -> saveGame());
-        withdrawButton.addActionListener(e -> withdrawMove());
+        saveButton.addActionListener(e -> {
+            LogicController.saveGame(this.logicController,this.user);
+            this.musicPlayer.playSoundEffectPressingButton();
+            this.isSaved = true;
+        });
+        withdrawButton.addActionListener(e -> withdrawMove(true));
         reloadButton.addActionListener(e -> reloadGame());
         answerButton.addActionListener(e -> showAnswer());
         quitButton.addActionListener(e -> quitGame());
@@ -312,8 +333,6 @@ public class GameFrame extends JFrame {
     }
 
     private JPanel getBoardContainer() {
-
-
         JPanel boardContainer = new JPanel(new GridBagLayout());
         boardContainer.setOpaque(false);
         boardContainer.add(klotskiBoardPanel);
@@ -321,22 +340,16 @@ public class GameFrame extends JFrame {
         return boardContainer;
     }
 
-    private void saveGame() {
-        stopTimer();
-        System.out.println("Save Game button clicked.");
-        JOptionPane.showMessageDialog(this, "Save functionality not implemented yet.");
-    }
-
     private void reloadGame() {
 
         for(int i = this.logicController.getMoves().size(); i > 0; i--){
-            withdrawMove();
+            withdrawMove(false);
         }
+        this.musicPlayer.playSoundEffectPressingButton();
 
     }
 
-    private void withdrawMove() {
-
+    private void withdrawMove(boolean isWithdraw) {
         if(this.logicController.getMoves().isEmpty()){
             JOptionPane.showMessageDialog(this, "No moves to withdraw.");
             return;
@@ -348,6 +361,10 @@ public class GameFrame extends JFrame {
             doMove(direction, true);
             this.selectedBox.setSelected(false);
             this.selectedBox = boxes.getLast();
+            if(isWithdraw){
+                this.musicPlayer.playSoundEffectPressingButton();
+                this.musicPlayer.playSoundEffectMovingBlock();
+            }
             repaint();
         }
     }
@@ -357,8 +374,19 @@ public class GameFrame extends JFrame {
     }
 
     private void quitGame() {
-        stopTimer();
-        dispose();
+        this.musicPlayer.playSoundEffectPressingButton();
+        if(!isSaved) {
+            int result = JOptionPane.showConfirmDialog(this, "This game has not been saved. Do you really want to quit?", "Warning", JOptionPane.YES_NO_OPTION);
+            if (result == JOptionPane.YES_OPTION) {
+                stopTimer();
+                this.dispose();
+            } else {
+                return;
+            }
+        }else{
+                stopTimer();
+                dispose();
+            }
     }
 
     public BoxComponent getSelectedBox() {
@@ -370,7 +398,6 @@ public class GameFrame extends JFrame {
     }
 
     private void setListener() {
-
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosed(WindowEvent e) {
@@ -380,15 +407,12 @@ public class GameFrame extends JFrame {
                 }
             }
         });
-
-
         addComponentListener(new ComponentAdapter() {
             @Override
             public void componentShown(ComponentEvent e) {
                 klotskiBoardPanel.requestFocusInWindow();
             }
         });
-
     }
 
     private void doMove(Direction direction,boolean isWithdraw) {
@@ -449,8 +473,10 @@ public class GameFrame extends JFrame {
     private void afterMove(Direction direction) {
         stepCount++;
         updateStepLabel();
+
         this.logicController.stepAccumulate();
         this.logicController.record(this.selectedBox,direction);
+        this.musicPlayer.playSoundEffectMovingBlock();
         if(this.logicController.isGameOver()){
             JOptionPane.showMessageDialog(this, "You win within" + stepCount + "steps!" +'\n' + "Your best record is ");
             this.dispose();
