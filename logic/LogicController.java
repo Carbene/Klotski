@@ -4,25 +4,25 @@ import frame.*;
 import record.*;
 import view.*;
 
+import java.util.Stack;
+
 public class LogicController {
 
     private int[][] map;
     private Level level;
     private GameFrame frame;
-    private GameRecorder gameRecorder;
     private User user;
     private int step;
     private int time;
+    private final Stack<Move> moves;
     private final static int HEIGHT = 4;
     private final static int WIDTH = 5;
 
     public LogicController( Level level,User user, GameFrame frame) {
-
         this.map = LogicController.copyMap(level);
         this.frame = frame;
         this.user = user;
-        this.gameRecorder = new GameRecorder(map,frame.getLevelSelectionFrame().getUser());
-
+        this.moves = new Stack<>();
     }
 
     public int getId(int row, int col) {
@@ -63,5 +63,20 @@ public class LogicController {
 
     public void setTime(int time) {
         this.time = time;
+    }
+
+    public void record(BoxComponent selectedBoxComponent, Direction direction) {
+
+        moves.push(new Move(selectedBoxComponent, direction));
+
+    }
+
+    public Stack<Move> getMoves(){
+        return moves;
+    }
+
+    public static void saveGame(LogicController controller) {
+
+
     }
 }

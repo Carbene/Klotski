@@ -3,7 +3,6 @@ package frame;
 import frame.theme.Style;
 import logic.LogicController;
 import record.Move;
-import record.GameRecorder;
 import record.User;
 import view.*;
 
@@ -27,7 +26,6 @@ public class GameFrame extends JFrame {
     private JPanel klotskiBoardPanel;
     private BackgroundPanel backgroundPanel;
     private BoxComponent selectedBox;
-    private GameRecorder gameRecorder;
 
     private Timer gameTimer;
     private ArrayList<BoxComponent> boxes;
@@ -42,7 +40,6 @@ public class GameFrame extends JFrame {
         this.selectionFrame = selectionFrame;
         this.isTimed = isTimed;
         this.user = user;
-        this.gameRecorder = new GameRecorder(LogicController.copyMap(level),this.user);
         this.logicController = new LogicController(level,user, this);
 
 
@@ -276,7 +273,7 @@ public class GameFrame extends JFrame {
 
     private void reloadGame() {
 
-        for(int i = gameRecorder.getMoves().size(); i > 0; i--){
+        for(int i = this.logicController.getMoves().size(); i > 0; i--){
             withdrawGame();
         }
 
@@ -284,11 +281,11 @@ public class GameFrame extends JFrame {
 
     private void withdrawGame() {
 
-        if(this.gameRecorder.getMoves().isEmpty()){
+        if(this.logicController.getMoves().isEmpty()){
             JOptionPane.showMessageDialog(this, "No moves to withdraw.");
             return;
         }else {
-            Move withdrawedMove = this.gameRecorder.getMoves().pop();
+            Move withdrawedMove = this.logicController.getMoves().pop();
             this.selectedBox = withdrawedMove.getBox();
             Direction direction = Direction.getOpposite(withdrawedMove.getDirection());
             doMove(direction, true);
@@ -391,7 +388,7 @@ public class GameFrame extends JFrame {
         stepCount++;
         updateStepLabel();
         this.logicController.stepAccumulate();
-        this.gameRecorder.record(this.selectedBox,direction);
+        this.logicController.record(this.selectedBox,direction);
         if(this.logicController.isGameOver()){
             JOptionPane.showMessageDialog(this, "You win within" + stepCount + "steps!" +'\n' + "Your best record is ");
             this.dispose();

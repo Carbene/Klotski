@@ -99,7 +99,7 @@ public class UserInterfaceFrame extends JFrame {
         JButton loadGameButton = new JButton("Load an Old Game");
         styleBtn(loadGameButton);
         buttonPanel.add(loadGameButton);
-        loadGameButton.addActionListener(e -> {
+        /*loadGameButton.addActionListener(e -> {
 
             JFileChooser fileChooser = new JFileChooser(this);
             fileChooser.setDialogTitle("Select a save file");
@@ -110,7 +110,7 @@ public class UserInterfaceFrame extends JFrame {
             File selectedFile = fileChooser.getSelectedFile();
 
 
-        });
+        });*/
     }
 
     private void setBGMButton() {
