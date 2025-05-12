@@ -7,6 +7,9 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.util.ArrayList;
 
+/**
+ * 这是登录面板，登陆相关的都在这里实现
+ */
 public class LoginFrame extends JFrame {
     private JRadioButton userRadioButton;
     private JRadioButton visitorRadioButton;
@@ -24,6 +27,9 @@ public class LoginFrame extends JFrame {
     private RegisterFrame registerFrame;
     private User currentUser = VISITOR_USER;
 
+    /**
+     * 这是一个无参构造方法，构造了初始的用户登录界面
+     */
     public LoginFrame() {
 
         initializeLoginFrame();
@@ -44,6 +50,9 @@ public class LoginFrame extends JFrame {
         setLocationRelativeTo(null);
     }
 
+    /**
+     * 初始化用户登录界面，设置事件监听
+     */
     private void initializeLoginFrame(){
         setTitle("Login");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -61,12 +70,18 @@ public class LoginFrame extends JFrame {
         addWindowListener(windowAdapter);
     }
 
+    /**
+     * 召唤用户界面
+     */
     private void startUserInterface() {
         UserInterfaceFrame userInterfaceFrame = new UserInterfaceFrame(this,currentUser);
         userInterfaceFrame.setVisible(true);
         this.setVisible(false);
     }
 
+    /**
+     * 获取上方的选择按钮，选择以何种身份登入
+     */
     private void getRadioPanel() {
         this.radioPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         userRadioButton = new JRadioButton("User");
@@ -79,6 +94,10 @@ public class LoginFrame extends JFrame {
         radioPanel.add(visitorRadioButton);
     }
 
+    /**
+     * 获取身份信息的登入区
+     * TODO: 在关闭后密码和用户信息未清除，需要在成功登入后先清除，避免危险
+     */
     private void getFieldsPanel() {
         this.fieldsPanel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
@@ -100,6 +119,9 @@ public class LoginFrame extends JFrame {
         fieldsPanel.add(passwordField, gbc);
     }
 
+    /**
+     * 底部的按钮面板，登入预注册
+     */
     private void getButtonPanel() {
         this.buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         loginButton = new JButton("Login");
@@ -108,6 +130,9 @@ public class LoginFrame extends JFrame {
         buttonPanel.add(registerButton);
     }
 
+    /**
+     * 设置事件监听器
+     */
     private void getActionListener(){
         ActionListener radioListener = e -> {
             boolean isUser = userRadioButton.isSelected();
@@ -134,6 +159,9 @@ public class LoginFrame extends JFrame {
         });
     }
 
+    /**
+     * 检查登录信息的合法性，并唤醒User类的方法查询本地用户信息
+     */
     private void login(){
         if (visitorRadioButton.isSelected()) {
             startUserInterface();
@@ -163,6 +191,10 @@ public class LoginFrame extends JFrame {
         }
     }
 
+    /**
+     * 唤醒用户注册界面
+     * TODO: 对于那些未注册的却直接输入相关信息，是不是可以直接创建，给出一个新的用户？
+     */
     private void register(){
         this.registerFrame = new RegisterFrame(this);
         registerFrame.setVisible(true);

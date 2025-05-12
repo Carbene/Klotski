@@ -1,6 +1,5 @@
 package frame;
 
-import frame.theme.Style;
 import logic.LogicController;
 import record.Move;
 import record.User;
@@ -11,10 +10,12 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
 
-import static frame.theme.Style.styleBtn;
+import static frame.Style.styleBtn;
 
+/**
+ * 这是游戏的主界面，包含了游戏的所有核心逻辑和视图
+ */
 public class GameFrame extends JFrame {
-
     private LevelSelectionFrame selectionFrame;
     private boolean isTimed;
 
@@ -35,7 +36,15 @@ public class GameFrame extends JFrame {
     private boolean isSaved = false;
     private UserInterfaceFrame userInterfaceFrame;
 
-
+    /**
+     * 这是第一类的有参构造器，作用是新建一个游戏界面，在选择新开始游戏时使用
+     *@param selectionFrame 上一级的视图，便于退出时进行相关设置（可能可以通过公开化方法进行消除）
+     * @param userInterfaceFrame 上一级的视图，便于退出时进行相关设置（可能可以通过公开化方法进行消除）
+     * @param user 用户对象，全局应当唯一
+     * @param level 地图传入
+     * @param isTimed 模式注释
+     * @param musicPlayer 音乐播放器对象，可能需要底部新增BGM Setting
+     */
     public GameFrame(LevelSelectionFrame selectionFrame,UserInterfaceFrame userInterfaceFrame,User user,Level level, boolean isTimed, MusicPlayer musicPlayer) {
         enableEvents(AWTEvent.KEY_EVENT_MASK);
         enableEvents(AWTEvent.MOUSE_EVENT_MASK);
@@ -58,6 +67,12 @@ public class GameFrame extends JFrame {
 
     }
 
+    /**
+     * 这是一个有参构造器，在读取存档时使用
+     * @param userInterfaceFrame 上一级视图，可能可以消除
+     * @param logicController 游戏中控，实现游戏的核心逻辑，并导入残局
+     * @param musicPlayer 音乐播放器对象，可能需要底部新增BGM Setting
+     */
     public GameFrame(UserInterfaceFrame userInterfaceFrame,LogicController logicController,MusicPlayer musicPlayer) {
         enableEvents(AWTEvent.KEY_EVENT_MASK);
         enableEvents(AWTEvent.MOUSE_EVENT_MASK);
@@ -80,8 +95,11 @@ public class GameFrame extends JFrame {
         setListener();
     }
 
+    /**
+     * 这个方法会消耗一个二维数组类型的变量，生成所有的Box，并生成Boxes，并绘制
+     * @param map 被消耗的地图
+     */
     private void initializeKlotskiBoard(Level map) {
-
         int[][] mapInitializer = LogicController.copyMap(map);
 
         ArrayList<BoxComponent> boxes = new ArrayList<>();
@@ -127,6 +145,10 @@ public class GameFrame extends JFrame {
         this.boxes = boxes;
     }
 
+    /**
+     * 这是一个重载方法，主要用于读取存档时使用，依然会消耗一个二维数组类型的变量，生成所有的Box，并生成Boxes，并绘制
+     * @param map 被消耗的地图
+     */
     private void reloadKlotskiBoard(int[][] map) {
         this.boxes = new ArrayList<>();
 
@@ -170,6 +192,9 @@ public class GameFrame extends JFrame {
         klotskiBoardPanel.setFocusable(true);
     }
 
+    /**
+     * 这是一个计时器的开始方法，主要用于游戏开始时使用
+     */
     private void startTimer() {
         if (gameTimer != null && gameTimer.isRunning()) {
             gameTimer.stop();
@@ -183,12 +208,18 @@ public class GameFrame extends JFrame {
         gameTimer.start();
     }
 
+    /**
+     * 这是一个计时器的停止方法，主要用于游戏结束时使用
+     */
     private void stopTimer() {
         if (gameTimer != null && gameTimer.isRunning()) {
             gameTimer.stop();
         }
     }
 
+    /**
+     * 这是一个同步方法，每过1s进行更新
+     */
     private void updateTimerLabel() {
         int minutes = timeElapsed / 60;
         int seconds = timeElapsed % 60;
@@ -196,12 +227,18 @@ public class GameFrame extends JFrame {
         timerLabel.setText(String.format("Time: %02d:%02d", minutes, seconds));
     }
 
+    /**
+     * 这是一个同步方法，每移动一步进行一次更新
+     */
     private void updateStepLabel(){
         stepsLabel.setText("Steps: " + stepCount);
     }
 
+    /**
+     * 这是一个背景面板的获得方法，它会接受所有的组件，并最终整合成一体
+     */
     private void getBackgroundPanel() {
-        this.backgroundPanel = new BackgroundPanel("path/to/game_wallpaper.jpg");
+        this.backgroundPanel = new BackgroundPanel("/gameBackgroundPic.jpg");
         backgroundPanel.setLayout(new BorderLayout(10, 10));
         setContentPane(backgroundPanel);
 
@@ -214,6 +251,11 @@ public class GameFrame extends JFrame {
         backgroundPanel.add(getDirectionPanel(), BorderLayout.WEST);
     }
 
+    /**
+     * 这是一个信息面板的获取方法，获取的是上方的信息，也就是步数和事件
+     * @param isTimed 是否及时判断是否显示事件
+     * @return 信息面板，包含步数和（可能的时间）
+     */
     private JPanel getInfoPanel(boolean isTimed) {
         JPanel infoPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 40, 10));
         infoPanel.setOpaque(false);
@@ -231,8 +273,11 @@ public class GameFrame extends JFrame {
         return infoPanel;
     }
 
+    /**
+     * 这是一个方向面板的获取方法，获取的是左右两侧的方向按钮（基于现在这个布局下我觉得不太能美化）。
+     * @return 方向控制器面板
+     */
     private JPanel getDirectionPanel(){
-
         JPanel directionPanel = new JPanel(new GridBagLayout());
         directionPanel.setOpaque(false);
         directionPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
@@ -296,6 +341,10 @@ public class GameFrame extends JFrame {
 
     }
 
+    /**
+     * 这是下方的控制面板的获取方法，包括多个按钮，如读档功能的GUI实现基于这个，并赋予各个按钮监听器激活对应的功能
+     * @return 控制面板
+     */
     private JPanel getControlPanel() {
         JPanel controlPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 10));
         controlPanel.setOpaque(false);
@@ -330,6 +379,9 @@ public class GameFrame extends JFrame {
         return controlPanel;
     }
 
+    /**
+     * 获取中心游戏地图的面板
+     */
     private void getKlotskiBoardPanel() {
         this.klotskiBoardPanel = new JPanel(null);
         this.klotskiBoardPanel.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 2));
@@ -344,6 +396,10 @@ public class GameFrame extends JFrame {
         });
     }
 
+    /**
+     * 获取中心的游戏面板，进行叠层防止变形
+     * @return 中心面板
+     */
     private JPanel getBoardContainer() {
         JPanel boardContainer = new JPanel(new GridBagLayout());
         boardContainer.setOpaque(false);
@@ -352,15 +408,27 @@ public class GameFrame extends JFrame {
         return boardContainer;
     }
 
+    /**
+     * 重新加载游戏的具体实现
+     */
     private void reloadGame() {
-
         for(int i = this.logicController.getMoves().size(); i > 0; i--){
             withdrawMove(false);
         }
         this.musicPlayer.playSoundEffectPressingButton();
+        this.timeElapsed = 0;
+        this.stepCount = 0;
+        this.logicController.setTime(0);
+        this.logicController.setStep(0);
+        updateTimerLabel();
+        updateStepLabel();
 
     }
 
+    /**
+     * 撤回的具体实现，重载也基于这个部分实现
+     * @param isWithdraw 是否是撤回,判断是否需要播放音效
+     */
     private void withdrawMove(boolean isWithdraw) {
         if(this.logicController.getMoves().isEmpty()){
             JOptionPane.showMessageDialog(this, "No moves to withdraw.");
@@ -381,10 +449,17 @@ public class GameFrame extends JFrame {
         }
     }
 
+    /**
+     * 这是搜索算法的接口，后面具体的搜索代码可以在这里接入总体
+     */
     private void showAnswer() {
         System.out.println("Show Answer button clicked.");
     }
 
+    /**
+     * 这是退出游戏的具体实现
+     * TODO: 切换的界面设置有问题，不能正确唤起用户界面
+     */
     private void quitGame() {
         this.musicPlayer.playSoundEffectPressingButton();
         if(!isSaved) {
@@ -401,14 +476,25 @@ public class GameFrame extends JFrame {
             }
     }
 
+    /**
+     * 获得当前面板选中的方块，保证视图与底层控制的统一
+     * @return 方块
+     */
     public BoxComponent getSelectedBox() {
         return selectedBox;
     }
 
+    /**
+     * 设置当前面板选中的方块，保证视图与底层控制的统一
+     * @param selectedBox 方块
+     */
     public void setSelectedBox(BoxComponent selectedBox) {
         this.selectedBox = selectedBox;
     }
 
+    /**
+     * 为游戏面板设置监听器
+     */
     private void setListener() {
         addWindowListener(new WindowAdapter() {
             @Override
@@ -430,6 +516,11 @@ public class GameFrame extends JFrame {
 
     }
 
+    /**
+     * box移动的具体实现
+     * @param direction 移动的方向
+     * @param isWithdraw 是否是撤回，决定计步
+     */
     private void doMove(Direction direction,boolean isWithdraw) {
         int row = selectedBox.getRow();
         int col = selectedBox.getCol();
@@ -475,21 +566,30 @@ public class GameFrame extends JFrame {
         }
     }
 
+    /**
+     * 这个方法用于重绘方块，主要是为了实现移动的效果
+     * @param row 可移除，当前的行数
+     * @param col 可移除，当前的列数
+     * @param nextRow 不可移除，为方块设置新的位置的行数
+     * @param nextCol 不可移除，为方块设置新的位置的列数
+     * @param selectedBox 不可移除，当前选中的方块
+     */
     private void boxRepaint(int row, int col, int nextRow, int nextCol, BoxComponent selectedBox) {
-
-        // this method used to repaint the block to implement the move action
-
         selectedBox.setRow(nextRow);
         selectedBox.setCol(nextCol);
         selectedBox.setLocation(selectedBox.getCol() * selectedBox.GRIDSIZE + 2, selectedBox.getRow() * selectedBox.GRIDSIZE + 2);
         selectedBox.repaint();
     }
 
+    /**
+     * 这个方法用于在每次移动后进行计步和判断游戏是否结束，并会记录移动，便于实现撤回和通信
+     * @param direction 移动的方向
+     */
     private void afterMove(Direction direction) {
         stepCount++;
         updateStepLabel();
 
-        this.logicController.stepAccumulate();
+        this.logicController.setStep(stepCount);
         this.logicController.record(this.selectedBox,direction);
         this.musicPlayer.playSoundEffectMovingBlock();
         if(this.logicController.isGameOver()){
@@ -498,6 +598,9 @@ public class GameFrame extends JFrame {
         }
     }
 
+    /**
+     * 这是一个键盘绑定的实现，主要是为了实现键盘的控制
+     */
     private class KeyBindingExample extends JPanel {
         public KeyBindingExample() {
             setFocusable(true);
@@ -554,14 +657,21 @@ public class GameFrame extends JFrame {
         }
     }
 
-    public LevelSelectionFrame getLevelSelectionFrame() {
-        return this.selectionFrame;
-    }
-
+    /**
+     * 这是一个获取当前的boxes的方法
+     * @return boxes
+     */
     public ArrayList<BoxComponent> getBoxes() {
         return boxes;
     }
 
+    /**
+     * 查询对应的box，撤回的重要工具函数
+     * @param row 查找板块的行数
+     * @param col 查找板块的列数
+     * @param type 查找板块的属性
+     * @return
+     */
     public BoxComponent getBox(int row, int col,int type) {
         for (BoxComponent box : boxes) {
             if (box.getRow() == row && box.getCol() == col && box.getType() == type) {

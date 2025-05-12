@@ -8,8 +8,11 @@ import java.awt.event.*;
 import logic.LogicController;
 import record.*;
 
-import static frame.theme.Style.styleBtn;
+import static frame.Style.styleBtn;
 
+/**
+ * 这是用户界面的类
+ */
 public class UserInterfaceFrame extends JFrame {
     private LoginFrame loginFrame;
     private String selectedLevel = null;
@@ -20,6 +23,12 @@ public class UserInterfaceFrame extends JFrame {
     private transient MusicPlayer musicPlayer;
 
 
+    /**
+     * 有参构造器，设置用户界面
+     * @param loginFrame 上级界面，方便回退
+     * TODO: 也许可以公开loginFrame的方法进行不传入？
+     * @param user 全局唯一的用户
+     */
     public UserInterfaceFrame(LoginFrame loginFrame, User user) {
         this.loginFrame = loginFrame;
         this.user = user;
@@ -31,6 +40,10 @@ public class UserInterfaceFrame extends JFrame {
 
     }
 
+    /**
+     * 切换背景音乐的播放状态，似乎应该是公开的
+     * TODO: 也许应该公开，全局调用？
+     */
     private void shiftPlayStatus() {
         bgmEnabled = !bgmEnabled;
         if (bgmEnabled) {
@@ -40,6 +53,25 @@ public class UserInterfaceFrame extends JFrame {
         }
     }
 
+    /**
+     * 获取退出游戏的按钮
+     */
+    //TODO:这里应当加入一个观战按钮
+    private void setLogoutButton() {
+        JButton logoutButton = new JButton("Log Out");
+        styleBtn(logoutButton);
+        buttonPanel.add(logoutButton);
+        logoutButton.addActionListener(e -> {
+            musicPlayer.playSoundEffectPressingButton();
+            System.out.println("Logging out.");
+            this.dispose();
+            loginFrame.setVisible(true);
+        });
+    }
+
+    /**
+     * 初始化用户界面
+     */
     private void initializeUserInterface() {
         setTitle("Klotski Board Game");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -47,8 +79,11 @@ public class UserInterfaceFrame extends JFrame {
         setExtendedState(JFrame.MAXIMIZED_BOTH);
     }
 
+    /**
+     * 获取背景面板，这是背景图的实现，还有开关的实现
+     */
     private void getBackgroundPanel() {
-        this.background = new BackgroundPanel("src/frame/theme/userInterfaceBackgroundPic.jpg");
+        this.background = new BackgroundPanel("/userInterfaceBackgroundPic.jpg");
         background.setLayout(new BorderLayout(10, 10));
         setContentPane(background);
 
@@ -88,6 +123,9 @@ public class UserInterfaceFrame extends JFrame {
         setFocusable(true);
     }
 
+    /**
+     * 获得开始游戏的按钮
+     */
     private void setStartGameButton() {
         JButton startGameButton = new JButton("Start a New Game");
         styleBtn(startGameButton);
@@ -109,6 +147,9 @@ public class UserInterfaceFrame extends JFrame {
         });
     }
 
+    /**
+     * 获得背景音乐调控的按钮
+     */
     private void setBGMButton() {
         JButton bgmButton = new JButton("BGM Setting");
         styleBtn(bgmButton);
@@ -119,18 +160,9 @@ public class UserInterfaceFrame extends JFrame {
         });
     }
 
-    private void setLogoutButton() {
-        JButton logoutButton = new JButton("Log Out");
-        styleBtn(logoutButton);
-        buttonPanel.add(logoutButton);
-        logoutButton.addActionListener(e -> {
-            musicPlayer.playSoundEffectPressingButton();
-            System.out.println("Logging out.");
-            this.dispose();
-            loginFrame.setVisible(true);
-        });
-    }
-
+    /**
+     * 加载游戏的唤起方法，会转入LogicController的具体实现
+     */
     private void loadGame() {
         LogicController logicController = LogicController.loadGame(this);
         if(logicController != null) {
@@ -141,11 +173,22 @@ public class UserInterfaceFrame extends JFrame {
             this.setVisible(false);
         }
     }
+    // TODO:这里应当加入一个观战的具体实现
 
+    /**
+     * 获取当前用户，也许用户应该是全局唯一的
+     * TODO: 优化用户类相关的代码
+     * @return 当前用户
+     */
     public User getUser() {
         return user;
     }
 
+    /**
+     * 传递音乐播放器对象
+     * TODO: 似乎应该是唯一的
+     * @return 获得音乐播放器对象
+     */
     public MusicPlayer getMusicPlayer() {
         return musicPlayer;
     }

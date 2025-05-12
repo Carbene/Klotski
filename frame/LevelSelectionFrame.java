@@ -7,6 +7,9 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
+/**
+ * 这是难度选择的用户界面，由用户选择界面唤起
+ */
 public class LevelSelectionFrame extends JDialog {
     private String selectedLevel;
     private String[] levels = {"1", "2", "3", "4","5"};
@@ -16,6 +19,12 @@ public class LevelSelectionFrame extends JDialog {
     private UserInterfaceFrame userInterfaceFrame;
     private User user;
 
+    /**
+     * 一个有参构造器，初始化难度选择界面
+     * @param owner 上级界面，这里应该具体化为用户界面
+     * @param user 当前玩家
+     *TODO: 用户类全局统一公开化？
+     */
     public LevelSelectionFrame(Frame owner,User user) {
         super(owner, "Select Level", true);
         this.user = user;
@@ -28,6 +37,9 @@ public class LevelSelectionFrame extends JDialog {
 
     }
 
+    /**
+     * 更新视图方法，在难度选择后进行对应的渲染
+     */
     private void updatePreview() {
         previewLabel.setText(this.selectedLevel);
         if(this.user.getId() != "Visitor") {
@@ -37,10 +49,13 @@ public class LevelSelectionFrame extends JDialog {
             achievementStepsLabel.setText("Please login to see your best record");
             achivementTimeLabel.setText("Please login to see your best record");
         }
-
-
     }
 
+    /**
+     * 开始游戏的方法，传入一个布尔值，决定是否为计时模式
+     * @param isTimed 是否为计时模式
+     *TODO: 界面切换逻辑仍然有问题
+     */
     private void startGame(boolean isTimed) {
         if (selectedLevel == null) {
             JOptionPane.showMessageDialog(this, "Please select a level first before using the 'Select Level' button.", "Level Not Selected", JOptionPane.WARNING_MESSAGE);
@@ -61,6 +76,12 @@ public class LevelSelectionFrame extends JDialog {
         }
     }
 
+    /**
+     * 获取对应代码的地图枚举常量
+     * @param code 代码
+     * @return 枚举常量
+     * TODO: 其实这里本来的用途是为Level赋予了中文名称，但是似乎应为UTF的问题，和英文一同使用没有正常渲染，是否可能可以改进？
+     */
     public Level setLevel(int code) {
         for(Level map : Level.values()){
             if(map.getCODE() == code){
@@ -70,6 +91,10 @@ public class LevelSelectionFrame extends JDialog {
         return null;
     }
 
+    /**
+     * 获取对应的难度列表按钮，左侧的一列
+     * @return 难度选择按钮
+     */
     private JPanel getLevelListPanel(){
         JPanel levelListPanel = new JPanel();
         levelListPanel.setLayout(new BoxLayout(levelListPanel, BoxLayout.Y_AXIS));
@@ -92,6 +117,10 @@ public class LevelSelectionFrame extends JDialog {
         return levelListPanel;
     }
 
+    /**
+     * 底部的开始游戏按钮，有两种模式
+     * @return 游戏开始按钮
+     */
     private JPanel getGameStartPanel(){
         JPanel gameStartPanel = new JPanel();
         gameStartPanel.setLayout(new BoxLayout(gameStartPanel, BoxLayout.X_AXIS));
@@ -119,6 +148,11 @@ public class LevelSelectionFrame extends JDialog {
         return gameStartPanel;
     }
 
+    /**
+     * 预览按钮，中右侧，有地图的预览
+     * TODO: 给Level截图并本地保存
+     * @return 预览按钮
+     */
     private JPanel getPreviewPanel(){
         JPanel previewPanel = new JPanel();
         previewPanel.setLayout(new BoxLayout(previewPanel, BoxLayout.Y_AXIS));
@@ -145,6 +179,10 @@ public class LevelSelectionFrame extends JDialog {
         return previewPanel;
     }
 
+    /**
+     * 获取成就面板，显示最佳成绩
+     * @return 成就面板
+     */
     private JPanel getAchievementPanel(){
         JPanel achievementPanel = new JPanel();
         achievementPanel.setLayout(new BoxLayout(achievementPanel, BoxLayout.X_AXIS));
@@ -171,6 +209,10 @@ public class LevelSelectionFrame extends JDialog {
         return achievementPanel;
     }
 
+    /**
+     * 获取成就面板的包装器，设置对齐方式
+     * @return 包装器
+     */
     private JPanel getWrapperPanel(){
         JPanel wrapperPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 2));
         wrapperPanel.setOpaque(false);
@@ -179,6 +221,11 @@ public class LevelSelectionFrame extends JDialog {
         return wrapperPanel;
     }
 
+    /**
+     * 获取背景板，进行美化
+     * TODO: 找到背景资源图
+     * @return 背景面板
+     */
     private BackgroundPanel getBackgroundPanel(){
 
         BackgroundPanel background = new BackgroundPanel("src/frame/theme/levelSelectionBackgroundPic.jpg");

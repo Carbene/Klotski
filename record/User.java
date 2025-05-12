@@ -6,12 +6,20 @@ import javax.swing.*;
 import java.io.*;
 import java.util.ArrayList;
 
+/**
+ * 用户类，所有需要验证的方法都基于这里实现
+ */
 public class User implements Serializable {
     private final String id;
     private final String password;
     private int[][] bestRecord;
     private static final String DIRECTORY = "src/record/userInfo";
 
+    /**
+     * 有参构造器，构造的是正常的用户，并会本地建立副本
+     * @param id 用户名
+     * @param password 用户密码
+     */
     public User(String id, String password) {
         this.id = id;
         this.password = password;
@@ -19,12 +27,19 @@ public class User implements Serializable {
         User.serialize(this);
     }
 
+    /**
+     * 无参构造器，构造的是游客，之后不应被调用
+     */
     public User(){
         this.id = "Visitor";
         this.password = null;
         User.serialize(this);
     }
 
+    /**
+     * 序列化对象，本地保存信息
+     * @param user 需要序列化的用户信息
+     */
     public static void serialize(User user) {
         try {
             FileOutputStream fileOut = new FileOutputStream(User.DIRECTORY+File.separator+user.id);
@@ -37,6 +52,12 @@ public class User implements Serializable {
         }
     }
 
+    /**
+     * 反序列化，读取本地的信息
+     * @param id
+     * @return 匹配的用户对象
+     * TODO: 用户打包后依然可以正常运行
+     */
     public static User deserialize(String id){
         User user = null;
         String filePath = DIRECTORY + File.separator + id;
@@ -60,6 +81,10 @@ public class User implements Serializable {
         return user;
     }
 
+    /**
+     * 获取本地存储的左右的用户信息
+     * @return 本地的用户对象列表
+     */
     public static ArrayList<User> deserializeList() {
         ArrayList<User> users = new ArrayList<>();
         File directory = new File(User.DIRECTORY);
@@ -79,22 +104,51 @@ public class User implements Serializable {
         return users;
     }
 
+    /**
+     * 获取用户名
+     * @return 用户名
+     */
     public String getId() {
         return id;
     }
 
+    /**
+     * 获取用户密码
+     * @return 用户密码
+     */
     public String getPassword() {
         return password;
     }
 
+    /**
+     * 获取一个用户的最好的某关卡的某类乘积
+     * @param user 目标用户
+     * @param level 对应等级
+     * @param mode 具体模式
+     * @return 成绩数值（步数或时间）
+     */
     public static int getBestRecord(User user,int level, int mode) {
         return user.bestRecord[level - 1][mode];
     }
 
+    /**
+     * 更新最好成绩
+     * @param level 对应地图
+     * @param user 目标用户
+     * @param mode 对应模式
+     * @param achievement 新的成就
+     */
     public static void setBestRecord(Level level, User user, int mode, int achievement){
         user.bestRecord[level.ordinal()][mode] = achievement;
     }
 
+    /**
+     * 判断注册用户合不合法
+     * TODO:加入其他的逻辑中，未合并
+     * @param id 用户名是否重复或为空
+     * @param password 密码是否为空
+     * @return
+     */
     public static boolean registerUser(String id,String password) {
         if(id == null || password == null || id.isEmpty() || password.isEmpty()) {
             return false;

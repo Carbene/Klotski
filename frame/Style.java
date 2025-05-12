@@ -1,4 +1,4 @@
-package frame.theme;
+package frame;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -6,8 +6,15 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
+/**
+ * 这是一个工具类，用于美化我们的按钮，并实现风格统一
+ */
 public class Style {
 
+    /**
+     * 对按钮对象进行美化，色彩参数等
+     * @param button 需要美化的对象
+     */
     public static void styleBtn(JButton button) {
 
         button.setFocusPainted(false);
@@ -27,6 +34,10 @@ public class Style {
 
     }
 
+    /**
+     * 设置Label的相关属性，字体颜色等
+     * @param label 需要美化的对象
+     */
     public static void styleLabel(JLabel label) {
         label.setForeground(Color.WHITE);
         label.setFont(new Font("Arial", Font.BOLD, 18));

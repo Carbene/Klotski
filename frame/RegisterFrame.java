@@ -7,6 +7,9 @@ import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 
+/**
+ * 这是注册面板，注册相关的都在这里实现
+ */
 public class RegisterFrame extends JFrame {
 
     private LoginFrame loginFrame;
@@ -18,6 +21,10 @@ public class RegisterFrame extends JFrame {
     private JPanel buttonPanel;
     private JButton registerButton;
 
+    /**
+     * 一个有参构造器，唤醒注册界面
+     * @param loginFrame 母界面，唤醒这个程序
+     */
     public RegisterFrame(LoginFrame loginFrame) {
         this.loginFrame = loginFrame;
 
@@ -29,6 +36,9 @@ public class RegisterFrame extends JFrame {
         this.setVisible(true);
     }
 
+    /**
+     * 初始化注册界面
+     */
     private void initializeRegisterFrame(){
         this.setTitle("Register");
         this.setSize(300, 200);
@@ -45,6 +55,9 @@ public class RegisterFrame extends JFrame {
         this.addWindowListener(windowAdapter);
     }
 
+    /**
+     * 设置可输入区
+     */
     private void getFieldsPanel() {
         this.fieldsPanel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
@@ -66,6 +79,9 @@ public class RegisterFrame extends JFrame {
         fieldsPanel.add(passwordField, gbc);
     }
 
+    /**
+     * 底部的注册确认
+     */
     private void getButtonPanel() {
         this.buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         this.registerButton = new JButton("Register");

@@ -11,6 +11,8 @@ import java.util.Stack;
 
 public class LogicController implements Serializable {
 
+    //this is the main logic controller of the game, it will control the game logic and the game state.
+
     private int[][] map;
     private Level level;
     private User user;
@@ -22,6 +24,9 @@ public class LogicController implements Serializable {
     private final static int WIDTH = 5;
 
     public LogicController(Level level,User user,boolean isTimed) {
+
+        //this is a parameterized constructor, it will create a new logic controller with the given level, user, and mode.
+
         this.map = LogicController.copyMap(level);
         this.user = user;
         this.moves = new Stack<>();
@@ -69,8 +74,8 @@ public class LogicController implements Serializable {
         return mapCopy;
     }
 
-    public void stepAccumulate() {
-        this.step++;
+    public void setStep(int step) {
+        this.step = step;
     }
 
     public int getStep(){
