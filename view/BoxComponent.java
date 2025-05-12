@@ -28,6 +28,7 @@ public class BoxComponent extends JComponent {
      * @param row 当前坐标
      * @param col 当前坐标
      * @param type 类型
+     *             TODO: 新的障碍物类（也有bonus)
      * @param gameFrame 归属的游戏框架
      */
     public BoxComponent(Color color, int row, int col, int type,GameFrame gameFrame) {
