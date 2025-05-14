@@ -23,6 +23,7 @@ public class GameFrame extends JFrame {
     private JLabel timerLabel;
     private int stepCount = 0;
     private int timeElapsed = 0;
+    private int imagePathFollowing=0;
 
     private JPanel klotskiBoardPanel;
     private BackgroundPanel backgroundPanel;
@@ -108,21 +109,21 @@ public class GameFrame extends JFrame {
             for (int j = 0; j < mapInitializer[0].length; j++) {
                 BoxComponent box = null;
                 if (mapInitializer[i][j] == 1) {
-                    box = new BoxComponent(Color.ORANGE, i, j,1, this);
+                    box = new BoxComponent("/klotiskiXiaoBin.jpg", i, j,1, this);
                     box.setSize(box.GRIDSIZE, box.GRIDSIZE);
                     mapInitializer[i][j] = 0;
                 } else if (mapInitializer[i][j] == 2) {
-                    box = new BoxComponent(Color.GREEN, i, j,2, this);
+                    box = new BoxComponent("/klotiskiDaBin.jpg", i, j,2, this);
                     box.setSize(box.GRIDSIZE * 2, box.GRIDSIZE);
                     mapInitializer[i][j] = 0;
                     mapInitializer[i][j + 1] = 0;
                 } else if (mapInitializer[i][j] == 3) {
-                    box = new BoxComponent(Color.BLUE, i, j,3, this);
+                    box = new BoxComponent("/klotiskiGuanYu.jpg", i, j,3, this);
                     box.setSize(box.GRIDSIZE, box.GRIDSIZE * 2);
                     mapInitializer[i][j] = 0;
                     mapInitializer[i + 1][j] = 0;
                 } else if (mapInitializer[i][j] == 4) {
-                    box = new BoxComponent(Color.RED, i, j,4, this);
+                    box = new BoxComponent("/klotiskiCaoCao.jpg", i, j,4, this);
                     box.setSize(box.GRIDSIZE * 2, box.GRIDSIZE * 2);
                     mapInitializer[i][j] = 0;
                     mapInitializer[i + 1][j] = 0;
@@ -156,21 +157,21 @@ public class GameFrame extends JFrame {
             for (int j = 0; j < map[0].length; j++) {
                 BoxComponent box = null;
                 if (map[i][j] == 1) {
-                    box = new BoxComponent(Color.ORANGE, i, j,1, this);
+                    box = new BoxComponent("/klotiskiXiaoBin.jpg", i, j,1, this);
                     box.setSize(box.GRIDSIZE, box.GRIDSIZE);
                     map[i][j] = 0;
                 } else if (map[i][j] == 2) {
-                    box = new BoxComponent(Color.GREEN, i, j,2, this);
+                    box = new BoxComponent("/klotiskiDaBin.jpg", i, j,2, this);
                     box.setSize(box.GRIDSIZE * 2, box.GRIDSIZE);
                     map[i][j] = 0;
                     map[i][j + 1] = 0;
                 } else if (map[i][j] == 3) {
-                    box = new BoxComponent(Color.BLUE, i, j,3, this);
+                    box = new BoxComponent("/klotiskiGuanYu.jpg", i, j,3, this);
                     box.setSize(box.GRIDSIZE, box.GRIDSIZE * 2);
                     map[i][j] = 0;
                     map[i + 1][j] = 0;
                 } else if (map[i][j] == 4) {
-                    box = new BoxComponent(Color.RED, i, j,4, this);
+                    box = new BoxComponent("/klotiskiCaoCao.jpg", i, j,4, this);
                     box.setSize(box.GRIDSIZE * 2, box.GRIDSIZE * 2);
                     map[i][j] = 0;
                     map[i + 1][j] = 0;
@@ -471,9 +472,9 @@ public class GameFrame extends JFrame {
                 return;
             }
         }else{
-                stopTimer();
-                dispose();
-            }
+            stopTimer();
+            dispose();
+        }
     }
 
     /**
@@ -592,12 +593,38 @@ public class GameFrame extends JFrame {
         this.logicController.setStep(stepCount);
         this.logicController.record(this.selectedBox,direction);
         this.musicPlayer.playSoundEffectMovingBlock();
-        if(this.logicController.isGameOver()){
-            JOptionPane.showMessageDialog(this, "You win within" + stepCount + "steps!" +'\n' + "Your best record is ");
-            this.dispose();
+        if(this.logicController.isGameOver(stepCount)){
+            showVictoryDialog();
         }
     }
+    /**
+     * 这是一个用以生成结束的对话框
+     */
+    private void showVictoryDialog() {
+        Object[] options = {"继续游戏", "退出游戏"};
 
+        int minutes = timeElapsed / 60;
+        int seconds = timeElapsed % 60;
+        String timeText = String.format("%02d:%02d", minutes, seconds);
+
+        int choice = JOptionPane.showOptionDialog(
+                this,
+                "恭喜！您以 " + stepCount + " 步、" + timeText + " 的成绩获胜！",
+                "游戏胜利！",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE,
+                null,
+                options,
+                options[0]
+        );
+
+        // 处理用户选择
+        if (choice == JOptionPane.YES_OPTION) {
+        } else {
+            stopTimer();
+            dispose();
+        }
+    }
     /**
      * 这是一个键盘绑定的实现，主要是为了实现键盘的控制
      */

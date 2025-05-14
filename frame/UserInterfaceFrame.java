@@ -4,6 +4,7 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.IOException;
 
 import logic.LogicController;
 import record.*;
@@ -22,7 +23,6 @@ public class UserInterfaceFrame extends JFrame {
     private JPanel buttonPanel;
     private transient MusicPlayer musicPlayer;
 
-
     /**
      * 有参构造器，设置用户界面
      * @param loginFrame 上级界面，方便回退
@@ -37,6 +37,7 @@ public class UserInterfaceFrame extends JFrame {
         initializeUserInterface();
         getBackgroundPanel();
         shiftPlayStatus();
+
 
     }
 
@@ -94,6 +95,7 @@ public class UserInterfaceFrame extends JFrame {
         setLoadGameButton();
         setBGMButton();
         setLogoutButton();
+        setSpectatorButton();
         background.add(buttonPanel, BorderLayout.SOUTH);
 
         addWindowListener(new WindowAdapter() {
@@ -147,6 +149,23 @@ public class UserInterfaceFrame extends JFrame {
         });
     }
 
+    /**
+     *设置观战按钮
+     * TODO: 这里应当实现一个观战按钮的功能
+     */
+    private void setSpectatorButton() {
+        //在UserInterfaceFrame添加观战按钮：
+        JButton spectateBtn = new JButton("观战");
+        styleBtn(spectateBtn);
+        buttonPanel.add(spectateBtn);
+        spectateBtn.addActionListener(e -> {
+            try {
+                new SpectatorFrame().setVisible(true);
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
+        });
+    }
     /**
      * 获得背景音乐调控的按钮
      */

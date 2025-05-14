@@ -34,7 +34,10 @@ public class LogicController implements Serializable {
         this.user = user;
         this.moves = new Stack<>();
         this.isTimed = isTimed;
+        this.level = level;
     }
+
+
 
     /**
      * 获取当前矩阵记录下的位置信息，占位信息
@@ -59,13 +62,17 @@ public class LogicController implements Serializable {
      * TODO:获胜通知栏尚不完整
      * @return 是否胜利
      */
-    public boolean isGameOver() {
+    public boolean isGameOver(int stepCount) {
         if(map[1][3] == 4 && map[2][3] == 4 && map[1][4] == 4 && map[2][4] == 4) {
-            if(User.getBestRecord(user,level.getCODE(),0) > this.step) {
-                User.setBestRecord(level,user,0,step);
-            }
-            if(User.getBestRecord(user,level.getCODE(),1) > this.time) {
-                User.setBestRecord(level,user,1,time);
+            if(user.getUserSymbol()==1){
+                if(level!=null&&user!=null){
+                    if(User.getBestRecord(user,level.getCODE(),0) > this.step) {
+                        User.setBestRecord(level,user,0,step);
+                    }
+                    if(User.getBestRecord(user,level.getCODE(),1) > this.time) {
+                        User.setBestRecord(level,user,1,time);
+                    }
+                }
             }
             return true;
         }

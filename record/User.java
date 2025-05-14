@@ -14,7 +14,7 @@ public class User implements Serializable {
     private final String password;
     private int[][] bestRecord;
     private static final String DIRECTORY = "src/record/userInfo";
-
+    private int userSymbol=0;
     /**
      * 有参构造器，构造的是正常的用户，并会本地建立副本
      * @param id 用户名
@@ -23,8 +23,14 @@ public class User implements Serializable {
     public User(String id, String password) {
         this.id = id;
         this.password = password;
-        this.bestRecord = new int[Level.values().length][2];
         User.serialize(this);
+        this.userSymbol=1;
+        this.bestRecord = new int[Level.values().length][2];
+        for(int i=0;i<Level.values().length;i++){
+            for(int j=0;j<2;j++){
+                bestRecord[i][j]=Integer.MAX_VALUE;
+            }
+        }
     }
 
     /**
@@ -34,6 +40,8 @@ public class User implements Serializable {
         this.id = "Visitor";
         this.password = null;
         User.serialize(this);
+        this.userSymbol=0;
+
     }
 
     /**
@@ -50,6 +58,12 @@ public class User implements Serializable {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+    /**
+     * 此方法用于判定是否为游客
+     */
+    public int getUserSymbol() {
+        return userSymbol;
     }
 
     /**
@@ -120,6 +134,7 @@ public class User implements Serializable {
         return password;
     }
 
+
     /**
      * 获取一个用户的最好的某关卡的某类乘积
      * @param user 目标用户
@@ -130,6 +145,7 @@ public class User implements Serializable {
     public static int getBestRecord(User user,int level, int mode) {
         return user.bestRecord[level - 1][mode];
     }
+
 
     /**
      * 更新最好成绩

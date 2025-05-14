@@ -2,18 +2,21 @@ package view;
 
 import frame.GameFrame;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 
 /**
  * 这是方块的视图类，用于生成具体的板块
  */
 public class BoxComponent extends JComponent {
-    private Color color;
+    private Image image;
     private int row;
     private int col;
     private boolean isSelected;
@@ -23,7 +26,7 @@ public class BoxComponent extends JComponent {
 
     /**
      * 一个有参构造器，构造所需的方块
-     * @param color 需要渲染的颜色
+     * @param imagePath 当前图片路径
      *              TODO: 也许需要更新为全新的类似于材质或者图片的东西
      * @param row 当前坐标
      * @param col 当前坐标
@@ -31,8 +34,8 @@ public class BoxComponent extends JComponent {
      *             TODO: 新的障碍物类（也有bonus)
      * @param gameFrame 归属的游戏框架
      */
-    public BoxComponent(Color color, int row, int col, int type,GameFrame gameFrame) {
-        this.color = color;
+    public BoxComponent(String imagePath, int row, int col, int type,GameFrame gameFrame) {
+        this.image=getImageFromPath(imagePath);
         this.row = row;
         this.col = col;
         this.type = type;
@@ -57,7 +60,7 @@ public class BoxComponent extends JComponent {
      * @param gameFrame 归属的框架
      */
     public BoxComponent(GameFrame gameFrame) {
-        this.color = null;
+        this.image=null;
         this.row = 0;
         this.col = 0;
         isSelected = true;
@@ -65,7 +68,46 @@ public class BoxComponent extends JComponent {
         this.owner = gameFrame;
 
     }
+    /**
+     *通过路径向容器添加图片
+     */
+    public Image getImageFromPath(String imagePath){
+        try {
+            URL imageUrl = getClass().getResource(imagePath);
+            if (imageUrl == null) {
+                throw new IOException("Image not found: " + imagePath);
+            }
+            Image originalImage = ImageIO.read(imageUrl);
+            return originalImage.getScaledInstance(
+                    getWidthByType(type),
+                    getHeightByType(type),
+                    Image.SCALE_SMOOTH
+            );
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 
+    private int getHeightByType(int type) {
+        switch (type){
+            case 1: return GRIDSIZE;
+            case 2: return GRIDSIZE;
+            case 3: return GRIDSIZE * 2;
+            case 4: return GRIDSIZE * 2;
+            default: return GRIDSIZE;
+        }
+    }
+
+    private int getWidthByType(int type) {
+        switch (type) {
+            case 1: return GRIDSIZE;
+            case 2: return GRIDSIZE * 2;
+            case 3: return GRIDSIZE;
+            case 4: return GRIDSIZE * 2;
+            default: return GRIDSIZE;
+        }
+    }
     /**
      * 重写的方法，进行绘制
      * @param g the <code>Graphics</code> object to protect
@@ -73,16 +115,30 @@ public class BoxComponent extends JComponent {
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
-        g.setColor(color);
+        g.setColor(getBackground());
         g.fillRect(0, 0, getWidth(), getHeight());
+        if(image!=null){
+            g.drawImage(image,0,0,getWidthByType(type), getHeightByType(type),this);
+        }
         Border border;
         if (isSelected) {
-            border = BorderFactory.createLineBorder(Color.red, 3);
+            border = BorderFactory.createLineBorder(Color.WHITE, 5);
         } else {
             border = BorderFactory.createLineBorder(Color.darkGray, 1);
         }
         this.setBorder(border);
         this.setOpaque(true);
+        /*super.paintComponent(g);
+        g.setColor(color);
+        g.fillRect(0, 0, getWidth(), getHeight());
+        Border border;
+        if (isSelected) {
+            border = BorderFactory.createLineBorder(Color.WHITE, 5);
+        } else {
+            border = BorderFactory.createLineBorder(Color.darkGray, 1);
+        }
+        this.setBorder(border);
+        this.setOpaque(true);*/
     }
 
     /**
