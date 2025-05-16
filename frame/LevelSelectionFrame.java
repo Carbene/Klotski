@@ -42,7 +42,7 @@ public class LevelSelectionFrame extends JDialog {
      */
     private void updatePreview() {
         previewLabel.setText(this.selectedLevel);
-        if(this.user.getId() != "Visitor") {
+        if(!this.user.getId().equals("Visitor")) {
             achievementStepsLabel.setText(User.getBestRecord(user,Integer.parseInt(selectedLevel),0) == 0 ?"Please first play the game" : "Best: " + User.getBestRecord(user,Integer.parseInt(selectedLevel),0) + " Steps");
             achivementTimeLabel.setText(User.getBestRecord(user,Integer.parseInt(selectedLevel),1) == 0 ?"Please first play the game" : "Best: " + User.getBestRecord(user,Integer.parseInt(selectedLevel),1) + " Seconds");
         }else{

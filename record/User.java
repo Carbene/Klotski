@@ -23,14 +23,9 @@ public class User implements Serializable {
     public User(String id, String password) {
         this.id = id;
         this.password = password;
-        User.serialize(this);
         this.userSymbol=1;
         this.bestRecord = new int[Level.values().length][2];
-        for(int i=0;i<Level.values().length;i++){
-            for(int j=0;j<2;j++){
-                bestRecord[i][j]=Integer.MAX_VALUE;
-            }
-        }
+        User.serialize(this);
     }
 
     /**
@@ -39,8 +34,8 @@ public class User implements Serializable {
     public User(){
         this.id = "Visitor";
         this.password = null;
-        User.serialize(this);
         this.userSymbol=0;
+        User.serialize(this);
 
     }
 
@@ -89,7 +84,7 @@ public class User implements Serializable {
                 System.err.println("Object read is not an instance of User: " + filePath);
                 return null;
             }
-        } catch (IOException | ClassNotFoundException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return user;

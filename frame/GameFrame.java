@@ -8,6 +8,13 @@ import view.*;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
 import static frame.Style.styleBtn;
@@ -18,19 +25,24 @@ import static frame.Style.styleBtn;
 public class GameFrame extends JFrame {
     private LevelSelectionFrame selectionFrame;
     private boolean isTimed;
+    private ServerSocket serverSocket;
+    private Socket socket;
+    public boolean isSpectator;
+    private boolean spectatorMemory;
+    private PrintWriter out;
 
     private JLabel stepsLabel;
     private JLabel timerLabel;
     private int stepCount = 0;
     private int timeElapsed = 0;
-    private int imagePathFollowing=0;
+    private int imagePathFollowing = 0;
 
     private JPanel klotskiBoardPanel;
     private BackgroundPanel backgroundPanel;
-    private BoxComponent selectedBox;
+    private Block selectedBlock;
 
     private Timer gameTimer;
-    private ArrayList<BoxComponent> boxes;
+    private ArrayList<Block> blocks;
     private LogicController logicController;
     private User user;
     private MusicPlayer musicPlayer;
@@ -56,13 +68,16 @@ public class GameFrame extends JFrame {
         this.logicController = new LogicController(level,user,isTimed);
         this.musicPlayer = musicPlayer;
         this.userInterfaceFrame = userInterfaceFrame;
+        this.isSpectator = false;
+        this.spectatorMemory = false;
 
         setTitle("Klotski Game");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setUndecorated(true);
         setExtendedState(JFrame.MAXIMIZED_BOTH);
 
-        getBackgroundPanel();
+        getBackgroundPanel(spectatorMemory);
+        setServerSocketSocket();
         initializeKlotskiBoard(level);
         setListener();
 
@@ -85,109 +100,225 @@ public class GameFrame extends JFrame {
         this.musicPlayer = musicPlayer;
         this.stepCount = logicController.getStep();
         this.timeElapsed = logicController.getTime();
+        this.isSpectator = false;
+        this.spectatorMemory = false;
 
         setTitle("Klotski Game");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setUndecorated(true);
         setExtendedState(JFrame.MAXIMIZED_BOTH);
 
-        getBackgroundPanel();
-        reloadKlotskiBoard(LogicController.copyMap(this.logicController.getMap()));
+        getBackgroundPanel(spectatorMemory);
+        setServerSocketSocket();
+        loadKlotskiBoard(LogicController.copyMap(this.logicController.getMap()));
         setListener();
     }
 
+    public GameFrame(UserInterfaceFrame userInterfaceFrame,MusicPlayer musicPlayer, Socket socket) {
+        enableEvents(AWTEvent.KEY_EVENT_MASK);
+        enableEvents(AWTEvent.MOUSE_EVENT_MASK);
+        this.socket = socket;
+        this.setSocket();
+
+        this.user = userInterfaceFrame.getUser();
+        this.musicPlayer = musicPlayer;
+        this.stepCount = logicController.getStep();
+        this.timeElapsed = logicController.getTime();
+        this.isSpectator = true;
+
+        setTitle("Klotski Game");
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setUndecorated(true);
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
+
+        getBackgroundPanel(this.spectatorMemory);
+        loadKlotskiBoard(LogicController.copyMap(this.logicController.getMap()));
+        setListener();
+    }
+
+    private void setSocket() {
+       new Thread(() -> {
+            try {
+                BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
+                this.out = new PrintWriter(socket.getOutputStream(),true);
+                String line;
+                while ((line = in.readLine()) != null) {
+                    String[] input = line.split(" ");
+                    if(input[0].equals("Map")){
+                        this.stepCount = Integer.parseInt(input[1]);
+                        this.timeElapsed = Integer.parseInt(input[2]);
+                        int[][] map = new int[4][5];
+                        for (int i = 0; i < 4; i++) {
+                            for (int j = 0; j < 5; j++) {
+                                map[i][j] = Integer.parseInt(input[i * 5 + j + 3]);
+                            }
+                        }
+                        this.logicController = new LogicController(map,this.user,this.isTimed);
+                    } else if (input[0].equals("Move")) {
+                        this.doMove(input);
+                    }
+                }
+                if (line.equals("Confirm")) {
+                    this.isSpectator = true;
+                    JOptionPane.showMessageDialog(this, "Now you have one move chance.");
+                }
+                if(line.equals("Requesting help")){
+                    int choice = JOptionPane.showConfirmDialog(this,"Confirm to help","Confirmation",JOptionPane.YES_NO_OPTION);
+                    if(choice == JOptionPane.YES_OPTION){
+                        this.sendMessage("Confirm");
+                        this.isSpectator = false;
+                        JOptionPane.showMessageDialog(this, "Now you have one move chance.");
+                    }else{
+                        this.sendMessage("Cancel");
+                    }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }).start();
+    }
+
+    private void setServerSocketSocket() {
+        try {
+            this.serverSocket = new ServerSocket(8080);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        new Thread(() -> {
+            try {
+                Socket ClientSocket = serverSocket.accept();
+                BufferedReader in = new BufferedReader(new InputStreamReader(ClientSocket.getInputStream(), StandardCharsets.UTF_8));
+                this.out = new PrintWriter(ClientSocket.getOutputStream(),true);
+                String map = "Map " + this.stepCount + " " + this.timeElapsed + " ";
+                for(int i = 0; i < this.logicController.getMap().length; i++){
+                    for(int j = 0; j < this.logicController.getMap()[0].length; j++){
+                        map += this.logicController.getMap()[i][j] + " ";
+                    }
+                }
+                this.sendMessage(map);
+                while(true){
+                    String line = in.readLine();
+                    if(line.equals("Available help")){
+                        int result = JOptionPane.showConfirmDialog(this, "Available Help", "Warning", JOptionPane.YES_NO_OPTION);
+                        if (result == JOptionPane.YES_OPTION) {
+                            this.sendMessage("Confirm");
+                            this.isSpectator = true;
+                        } else {
+                            this.sendMessage("Cancel");
+                        }
+                    }
+                    if(line.equals("Confirm")){
+                        this.isSpectator = false;
+                        JOptionPane.showMessageDialog(this, "The spectator rejects to help.");
+                    }
+                }
+            } catch (IOException e){
+                e.printStackTrace();
+            }
+
+        }).start();
+    }
+
+    private void sendMessage(String str){
+        if(this.out != null){
+            out.println(str);
+        }else{
+            return;
+        }
+    }
+
     /**
-     * 这个方法会消耗一个二维数组类型的变量，生成所有的Box，并生成Boxes，并绘制
+     * 这个方法会消耗一个二维数组类型的变量，生成所有的Block，并生成Blocks，并绘制
      * @param map 被消耗的地图
      */
     private void initializeKlotskiBoard(Level map) {
         int[][] mapInitializer = LogicController.copyMap(map);
 
-        ArrayList<BoxComponent> boxes = new ArrayList<>();
+        ArrayList<Block> blocks = new ArrayList<>();
 
         for (int i = 0; i < mapInitializer.length; i++) {
             for (int j = 0; j < mapInitializer[0].length; j++) {
-                BoxComponent box = null;
+                Block block = null;
                 if (mapInitializer[i][j] == 1) {
-                    box = new BoxComponent("/klotiskiXiaoBin.jpg", i, j,1, this);
-                    box.setSize(box.GRIDSIZE, box.GRIDSIZE);
+                    block = new Block("/klotiskiXiaoBin.jpg", i, j,1, this);
+                    block.setSize(block.GRIDSIZE, block.GRIDSIZE);
                     mapInitializer[i][j] = 0;
                 } else if (mapInitializer[i][j] == 2) {
-                    box = new BoxComponent("/klotiskiDaBin.jpg", i, j,2, this);
-                    box.setSize(box.GRIDSIZE * 2, box.GRIDSIZE);
+                    block = new Block("/klotiskiDaBin.jpg", i, j,2, this);
+                    block.setSize(block.GRIDSIZE * 2, block.GRIDSIZE);
                     mapInitializer[i][j] = 0;
                     mapInitializer[i][j + 1] = 0;
                 } else if (mapInitializer[i][j] == 3) {
-                    box = new BoxComponent("/klotiskiGuanYu.jpg", i, j,3, this);
-                    box.setSize(box.GRIDSIZE, box.GRIDSIZE * 2);
+                    block = new Block("/klotiskiGuanYu.jpg", i, j,3, this);
+                    block.setSize(block.GRIDSIZE, block.GRIDSIZE * 2);
                     mapInitializer[i][j] = 0;
                     mapInitializer[i + 1][j] = 0;
                 } else if (mapInitializer[i][j] == 4) {
-                    box = new BoxComponent("/klotiskiCaoCao.jpg", i, j,4, this);
-                    box.setSize(box.GRIDSIZE * 2, box.GRIDSIZE * 2);
+                    block = new Block("/klotiskiCaoCao.jpg", i, j,4, this);
+                    block.setSize(block.GRIDSIZE * 2, block.GRIDSIZE * 2);
                     mapInitializer[i][j] = 0;
                     mapInitializer[i + 1][j] = 0;
                     mapInitializer[i][j + 1] = 0;
                     mapInitializer[i + 1][j + 1] = 0;
                 }
-                if (box != null) {
-                    klotskiBoardPanel.add(box);
-                    box.setLocation(j * box.GRIDSIZE + 2, i * box.GRIDSIZE + 2);
-                    boxes.add(box);
+                if (block != null) {
+                    klotskiBoardPanel.add(block);
+                    block.setLocation(j * block.GRIDSIZE + 2, i * block.GRIDSIZE + 2);
+                    blocks.add(block);
                 }
             }
         }
         this.repaint();
-        boxes.add(new BoxComponent(this));
-        this.selectedBox = boxes.getLast();
+        blocks.add(new Block(this));
+        this.selectedBlock = blocks.getLast();
         klotskiBoardPanel.revalidate();
         klotskiBoardPanel.repaint();
         klotskiBoardPanel.setFocusable(true);
-        this.boxes = boxes;
+        this.blocks = blocks;
     }
 
     /**
-     * 这是一个重载方法，主要用于读取存档时使用，依然会消耗一个二维数组类型的变量，生成所有的Box，并生成Boxes，并绘制
+     * 这是一个重载方法，主要用于读取存档时使用，依然会消耗一个二维数组类型的变量，生成所有的Block，并生成Blocks，并绘制
      * @param map 被消耗的地图
      */
-    private void reloadKlotskiBoard(int[][] map) {
-        this.boxes = new ArrayList<>();
+    private void loadKlotskiBoard(int[][] map) {
+        this.blocks = new ArrayList<>();
 
         for (int i = 0; i < map.length; i++) {
             for (int j = 0; j < map[0].length; j++) {
-                BoxComponent box = null;
+                Block block = null;
                 if (map[i][j] == 1) {
-                    box = new BoxComponent("/klotiskiXiaoBin.jpg", i, j,1, this);
-                    box.setSize(box.GRIDSIZE, box.GRIDSIZE);
+                    block = new Block("/klotiskiXiaoBin.jpg", i, j,1, this);
+                    block.setSize(block.GRIDSIZE, block.GRIDSIZE);
                     map[i][j] = 0;
                 } else if (map[i][j] == 2) {
-                    box = new BoxComponent("/klotiskiDaBin.jpg", i, j,2, this);
-                    box.setSize(box.GRIDSIZE * 2, box.GRIDSIZE);
+                    block = new Block("/klotiskiDaBin.jpg", i, j,2, this);
+                    block.setSize(block.GRIDSIZE * 2, block.GRIDSIZE);
                     map[i][j] = 0;
                     map[i][j + 1] = 0;
                 } else if (map[i][j] == 3) {
-                    box = new BoxComponent("/klotiskiGuanYu.jpg", i, j,3, this);
-                    box.setSize(box.GRIDSIZE, box.GRIDSIZE * 2);
+                    block = new Block("/klotiskiGuanYu.jpg", i, j,3, this);
+                    block.setSize(block.GRIDSIZE, block.GRIDSIZE * 2);
                     map[i][j] = 0;
                     map[i + 1][j] = 0;
                 } else if (map[i][j] == 4) {
-                    box = new BoxComponent("/klotiskiCaoCao.jpg", i, j,4, this);
-                    box.setSize(box.GRIDSIZE * 2, box.GRIDSIZE * 2);
+                    block = new Block("/klotiskiCaoCao.jpg", i, j,4, this);
+                    block.setSize(block.GRIDSIZE * 2, block.GRIDSIZE * 2);
                     map[i][j] = 0;
                     map[i + 1][j] = 0;
                     map[i][j + 1] = 0;
                     map[i + 1][j + 1] = 0;
                 }
-                if (box != null) {
-                    klotskiBoardPanel.add(box);
-                    box.setLocation(j * box.GRIDSIZE + 2, i * box.GRIDSIZE + 2);
-                    boxes.add(box);
+                if (block != null) {
+                    klotskiBoardPanel.add(block);
+                    block.setLocation(j * block.GRIDSIZE + 2, i * block.GRIDSIZE + 2);
+                    blocks.add(block);
                 }
             }
         }
         this.repaint();
-        boxes.add(new BoxComponent(this));
-        this.selectedBox = boxes.getLast();
+        blocks.add(new Block(this));
+        this.selectedBlock = blocks.getLast();
         klotskiBoardPanel.revalidate();
         klotskiBoardPanel.repaint();
         klotskiBoardPanel.setFocusable(true);
@@ -238,7 +369,7 @@ public class GameFrame extends JFrame {
     /**
      * 这是一个背景面板的获得方法，它会接受所有的组件，并最终整合成一体
      */
-    private void getBackgroundPanel() {
+    private void getBackgroundPanel(boolean spectatorMemory) {
         this.backgroundPanel = new BackgroundPanel("/gameBackgroundPic.jpg");
         backgroundPanel.setLayout(new BorderLayout(10, 10));
         setContentPane(backgroundPanel);
@@ -247,7 +378,7 @@ public class GameFrame extends JFrame {
 
         backgroundPanel.add(getInfoPanel(isTimed), BorderLayout.NORTH);
         backgroundPanel.add(getBoardContainer(), BorderLayout.CENTER);
-        backgroundPanel.add(getControlPanel(), BorderLayout.SOUTH);
+        backgroundPanel.add(getControlPanel(spectatorMemory), BorderLayout.SOUTH);
         backgroundPanel.add(getDirectionPanel(), BorderLayout.EAST);
         backgroundPanel.add(getDirectionPanel(), BorderLayout.WEST);
     }
@@ -322,20 +453,28 @@ public class GameFrame extends JFrame {
         directionPanel.add(downButton, gbc);
 
         upButton.addActionListener(e -> {
-            doMove(Direction.UP, false);
-            this.musicPlayer.playSoundEffectPressingButton();
+            if(!this.isSpectator) {
+                doMove(Direction.UP, false);
+                this.musicPlayer.playSoundEffectPressingButton();
+            }
         });
         downButton.addActionListener(e -> {
-            doMove(Direction.DOWN,false);
-            this.musicPlayer.playSoundEffectPressingButton();
+            if(!this.isSpectator) {
+                doMove(Direction.DOWN, false);
+                this.musicPlayer.playSoundEffectPressingButton();
+            }
         });
         leftButton.addActionListener(e -> {
-            doMove(Direction.LEFT,false);
-            this.musicPlayer.playSoundEffectPressingButton();
+            if(!this.isSpectator) {
+                doMove(Direction.LEFT, false);
+                this.musicPlayer.playSoundEffectPressingButton();
+            }
         });
         rightButton.addActionListener(e -> {
-            doMove(Direction.RIGHT,false);
-            this.musicPlayer.playSoundEffectPressingButton();
+            if(!this.isSpectator) {
+                doMove(Direction.RIGHT, false);
+                this.musicPlayer.playSoundEffectPressingButton();
+        }
         });
 
         return directionPanel;
@@ -346,38 +485,61 @@ public class GameFrame extends JFrame {
      * 这是下方的控制面板的获取方法，包括多个按钮，如读档功能的GUI实现基于这个，并赋予各个按钮监听器激活对应的功能
      * @return 控制面板
      */
-    private JPanel getControlPanel() {
+    private JPanel getControlPanel(boolean spectatorMemory) {
         JPanel controlPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 10));
         controlPanel.setOpaque(false);
-        JButton saveButton = new JButton("Save Game");
-        JButton withdrawButton = new JButton("Withdraw");
-        JButton reloadButton = new JButton("Reload");
-        JButton answerButton = new JButton("Show Answer");
-        JButton quitButton = new JButton("Quit");
+        if(!spectatorMemory) {
+            JButton saveButton = new JButton("Save Game");
+            JButton withdrawButton = new JButton("Withdraw");
+            JButton reloadButton = new JButton("Reload");
+            JButton answerButton = new JButton("Show Answer");
+            JButton requestHelpButton = new JButton("Request Help");
+            JButton quitButton = new JButton("Quit");
 
-        styleBtn(saveButton);
-        styleBtn(withdrawButton);
-        styleBtn(reloadButton);
-        styleBtn(answerButton);
-        styleBtn(quitButton);
+            styleBtn(saveButton);
+            styleBtn(withdrawButton);
+            styleBtn(reloadButton);
+            styleBtn(answerButton);
+            styleBtn(requestHelpButton);
+            styleBtn(quitButton);
 
-        controlPanel.add(saveButton);
-        controlPanel.add(withdrawButton);
-        controlPanel.add(reloadButton);
-        controlPanel.add(answerButton);
-        controlPanel.add(quitButton);
+            controlPanel.add(saveButton);
+            controlPanel.add(withdrawButton);
+            controlPanel.add(reloadButton);
+            controlPanel.add(answerButton);
+            controlPanel.add(requestHelpButton);
+            controlPanel.add(quitButton);
 
-        saveButton.addActionListener(e -> {
-            LogicController.saveGame(this.logicController,this.user);
-            this.musicPlayer.playSoundEffectPressingButton();
-            this.isSaved = true;
-        });
-        withdrawButton.addActionListener(e -> withdrawMove(true));
-        reloadButton.addActionListener(e -> reloadGame());
-        answerButton.addActionListener(e -> showAnswer());
-        quitButton.addActionListener(e -> quitGame());
+            saveButton.addActionListener(e -> {
+                LogicController.saveGame(this.logicController, this.user);
+                this.musicPlayer.playSoundEffectPressingButton();
+                this.isSaved = true;
+            });
+            withdrawButton.addActionListener(e -> withdrawMove(true));
+            reloadButton.addActionListener(e -> reloadGame());
+            answerButton.addActionListener(e -> showAnswer());
+            requestHelpButton.addActionListener(e -> {sendMessage("Requesting Help");});
+            quitButton.addActionListener(e -> quitGame());
 
-        return controlPanel;
+            return controlPanel;
+        }else{
+            JButton offerHelpButton = new JButton("Offer help");
+            JButton quitButton = new JButton("Quit");
+
+            styleBtn(offerHelpButton);
+            styleBtn(quitButton);
+
+            controlPanel.add(offerHelpButton);
+            controlPanel.add(quitButton);
+
+            offerHelpButton.addActionListener(e -> {
+                this.musicPlayer.playSoundEffectPressingButton();
+                this.sendMessage("Available help");
+            });
+            quitButton.addActionListener(e -> quitGame());
+
+            return controlPanel;
+        }
     }
 
     /**
@@ -423,7 +585,6 @@ public class GameFrame extends JFrame {
         this.logicController.setStep(0);
         updateTimerLabel();
         updateStepLabel();
-
     }
 
     /**
@@ -436,12 +597,12 @@ public class GameFrame extends JFrame {
             return;
         }else {
             Move withdrawedMove = this.logicController.getMoves().pop();
-            this.selectedBox.setSelected(false);
-            this.selectedBox = this.getBox(withdrawedMove.getCoordinate()[0],  withdrawedMove.getCoordinate()[1], withdrawedMove.getType());
+            this.selectedBlock.setSelected(false);
+            this.selectedBlock = this.getBlock(withdrawedMove.getCoordinate()[0],  withdrawedMove.getCoordinate()[1], withdrawedMove.getType());
             Direction direction = Direction.getOpposite(withdrawedMove.getDirection());
             doMove(direction, true);
-            this.selectedBox.setSelected(false);
-            this.selectedBox = boxes.getLast();
+            this.selectedBlock.setSelected(false);
+            this.selectedBlock = blocks.getLast();
             if(isWithdraw){
                 this.musicPlayer.playSoundEffectPressingButton();
                 this.musicPlayer.playSoundEffectMovingBlock();
@@ -481,16 +642,16 @@ public class GameFrame extends JFrame {
      * 获得当前面板选中的方块，保证视图与底层控制的统一
      * @return 方块
      */
-    public BoxComponent getSelectedBox() {
-        return selectedBox;
+    public Block getSelectedBlock() {
+        return selectedBlock;
     }
 
     /**
      * 设置当前面板选中的方块，保证视图与底层控制的统一
-     * @param selectedBox 方块
+     * @param selectedBlock 方块
      */
-    public void setSelectedBox(BoxComponent selectedBox) {
-        this.selectedBox = selectedBox;
+    public void setSelectedBlock(Block selectedBlock) {
+        this.selectedBlock = selectedBlock;
     }
 
     /**
@@ -518,18 +679,18 @@ public class GameFrame extends JFrame {
     }
 
     /**
-     * box移动的具体实现
+     * block移动的具体实现
      * @param direction 移动的方向
      * @param isWithdraw 是否是撤回，决定计步
      */
     private void doMove(Direction direction,boolean isWithdraw) {
-        int row = selectedBox.getRow();
-        int col = selectedBox.getCol();
+        int row = selectedBlock.getRow();
+        int col = selectedBlock.getCol();
         int[][] map = logicController.getMap();
         if (this.logicController.getMap()[row][col] == 1 && Move.validateMove(1, row + direction.getRow(), col + direction.getCol(), direction, this.logicController)) {
             map[row][col] = 0;
             map[row + direction.getRow()][col + direction.getCol()] = 1;
-            boxRepaint(row, col, row + direction.getRow(), col + direction.getCol(), selectedBox);
+            blockRepaint(row, col, row + direction.getRow(), col + direction.getCol(), selectedBlock);
             if(!isWithdraw){
                 afterMove(direction);
             }
@@ -538,7 +699,7 @@ public class GameFrame extends JFrame {
             map[row][col + 1] = 0;
             map[row + direction.getRow()][col + direction.getCol()] = 2;
             map[row + direction.getRow()][col + direction.getCol() + 1] = 2;
-            boxRepaint(row, col, row + direction.getRow(), col + direction.getCol(), selectedBox);
+            blockRepaint(row, col, row + direction.getRow(), col + direction.getCol(), selectedBlock);
             if(!isWithdraw){
                 afterMove(direction);
             }
@@ -547,7 +708,7 @@ public class GameFrame extends JFrame {
             map[row + 1][col] = 0;
             map[row + direction.getRow()][col + direction.getCol()] = 3;
             map[row + direction.getRow() + 1][col + direction.getCol()] = 3;
-            boxRepaint(row, col, row + direction.getRow(), col + direction.getCol(), selectedBox);
+            blockRepaint(row, col, row + direction.getRow(), col + direction.getCol(), selectedBlock);
             if(!isWithdraw){
                 afterMove(direction);
             }
@@ -560,11 +721,18 @@ public class GameFrame extends JFrame {
             map[row + direction.getRow()][col + direction.getCol() + 1] = 4;
             map[row + direction.getRow() + 1][col + direction.getCol()] = 4;
             map[row + direction.getRow() + 1][col + direction.getCol() + 1] = 4;
-            boxRepaint(row, col, row + direction.getRow(), col + direction.getCol(), selectedBox);
+            blockRepaint(row, col, row + direction.getRow(), col + direction.getCol(), selectedBlock);
             if(!isWithdraw){
                 afterMove(direction);
             }
         }
+        this.isSpectator = this.spectatorMemory;
+    }
+
+    private void doMove(String[] input){
+        this.selectedBlock = getBlock(Integer.parseInt(input[1]),Integer.parseInt(input[2]),Integer.parseInt(input[3]));
+        Direction direction = Direction.getDirection(Integer.parseInt(input[4]));
+        doMove(direction,false);
     }
 
     /**
@@ -573,13 +741,13 @@ public class GameFrame extends JFrame {
      * @param col 可移除，当前的列数
      * @param nextRow 不可移除，为方块设置新的位置的行数
      * @param nextCol 不可移除，为方块设置新的位置的列数
-     * @param selectedBox 不可移除，当前选中的方块
+     * @param selectedBlock 不可移除，当前选中的方块
      */
-    private void boxRepaint(int row, int col, int nextRow, int nextCol, BoxComponent selectedBox) {
-        selectedBox.setRow(nextRow);
-        selectedBox.setCol(nextCol);
-        selectedBox.setLocation(selectedBox.getCol() * selectedBox.GRIDSIZE + 2, selectedBox.getRow() * selectedBox.GRIDSIZE + 2);
-        selectedBox.repaint();
+    private void blockRepaint(int row, int col, int nextRow, int nextCol, Block selectedBlock) {
+        selectedBlock.setRow(nextRow);
+        selectedBlock.setCol(nextCol);
+        selectedBlock.setLocation(selectedBlock.getCol() * selectedBlock.GRIDSIZE + 2, selectedBlock.getRow() * selectedBlock.GRIDSIZE + 2);
+        selectedBlock.repaint();
     }
 
     /**
@@ -587,11 +755,14 @@ public class GameFrame extends JFrame {
      * @param direction 移动的方向
      */
     private void afterMove(Direction direction) {
+        if(isSpectator){
+            return;
+        }
         stepCount++;
         updateStepLabel();
 
         this.logicController.setStep(stepCount);
-        this.logicController.record(this.selectedBox,direction);
+        this.logicController.record(this.selectedBlock,direction);
         this.musicPlayer.playSoundEffectMovingBlock();
         if(this.logicController.isGameOver(stepCount)){
             showVictoryDialog();
@@ -685,24 +856,24 @@ public class GameFrame extends JFrame {
     }
 
     /**
-     * 这是一个获取当前的boxes的方法
-     * @return boxes
+     * 这是一个获取当前的blocks的方法
+     * @return blocks
      */
-    public ArrayList<BoxComponent> getBoxes() {
-        return boxes;
+    public ArrayList<Block> getBlocks() {
+        return blocks;
     }
 
     /**
-     * 查询对应的box，撤回的重要工具函数
+     * 查询对应的block，撤回的重要工具函数
      * @param row 查找板块的行数
      * @param col 查找板块的列数
      * @param type 查找板块的属性
      * @return
      */
-    public BoxComponent getBox(int row, int col,int type) {
-        for (BoxComponent box : boxes) {
-            if (box.getRow() == row && box.getCol() == col && box.getType() == type) {
-                return box;
+    public Block getBlock(int row, int col, int type) {
+        for (Block block : blocks) {
+            if (block.getRow() == row && block.getCol() == col && block.getType() == type) {
+                return block;
             }
         }
         return null;

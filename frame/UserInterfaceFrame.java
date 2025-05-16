@@ -5,6 +5,7 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
+import java.net.Socket;
 
 import logic.LogicController;
 import record.*;
@@ -22,6 +23,7 @@ public class UserInterfaceFrame extends JFrame {
     private BackgroundPanel background;
     private JPanel buttonPanel;
     private transient MusicPlayer musicPlayer;
+    private Socket socket;
 
     /**
      * 有参构造器，设置用户界面
@@ -65,8 +67,10 @@ public class UserInterfaceFrame extends JFrame {
         logoutButton.addActionListener(e -> {
             musicPlayer.playSoundEffectPressingButton();
             System.out.println("Logging out.");
-            this.dispose();
             loginFrame.setVisible(true);
+            this.dispose();
+            musicPlayer.stopBGM();
+            musicPlayer = null;
         });
     }
 
@@ -93,9 +97,9 @@ public class UserInterfaceFrame extends JFrame {
         buttonPanel.setBorder(new EmptyBorder(0, 10, 10, 0));
         setStartGameButton();
         setLoadGameButton();
+        setSpectatorButton();
         setBGMButton();
         setLogoutButton();
-        setSpectatorButton();
         background.add(buttonPanel, BorderLayout.SOUTH);
 
         addWindowListener(new WindowAdapter() {
@@ -139,6 +143,26 @@ public class UserInterfaceFrame extends JFrame {
         });
     }
 
+    /**
+     *设置观战按钮
+     * TODO: 这里应当实现一个观战按钮的功能
+     */
+    private void setSpectatorButton() {
+        JButton spectateBtn = new JButton("Spectate a game");
+        styleBtn(spectateBtn);
+        buttonPanel.add(spectateBtn);
+        spectateBtn.addActionListener(e -> {
+            try{
+                this.socket = new Socket("local host",8080);
+            }catch (IOException exception){
+                exception.printStackTrace();
+                JOptionPane.showMessageDialog(null,"Could not connect to server");
+                return;
+            }
+            GameFrame gameFrame = new GameFrame(this,this.musicPlayer,this.socket);
+        });
+    }
+
     private void setLoadGameButton() {
         JButton loadGameButton = new JButton("Load an Old Game");
         styleBtn(loadGameButton);
@@ -146,24 +170,6 @@ public class UserInterfaceFrame extends JFrame {
         loadGameButton.addActionListener(e -> {
             musicPlayer.playSoundEffectPressingButton();
             this.loadGame();
-        });
-    }
-
-    /**
-     *设置观战按钮
-     * TODO: 这里应当实现一个观战按钮的功能
-     */
-    private void setSpectatorButton() {
-        //在UserInterfaceFrame添加观战按钮：
-        JButton spectateBtn = new JButton("观战");
-        styleBtn(spectateBtn);
-        buttonPanel.add(spectateBtn);
-        spectateBtn.addActionListener(e -> {
-            try {
-                new SpectatorFrame().setVisible(true);
-            } catch (IOException ex) {
-                throw new RuntimeException(ex);
-            }
         });
     }
     /**
