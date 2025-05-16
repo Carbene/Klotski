@@ -16,6 +16,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.concurrent.CountDownLatch;
 
 import static frame.Style.styleBtn;
 
@@ -48,6 +49,7 @@ public class GameFrame extends JFrame {
     private MusicPlayer musicPlayer;
     private boolean isSaved = false;
     private UserInterfaceFrame userInterfaceFrame;
+    private final CountDownLatch latch = new CountDownLatch(1);
 
     /**
      * 这是第一类的有参构造器，作用是新建一个游戏界面，在选择新开始游戏时使用
@@ -119,6 +121,11 @@ public class GameFrame extends JFrame {
         enableEvents(AWTEvent.MOUSE_EVENT_MASK);
         this.socket = socket;
         this.setSocket();
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
         this.user = userInterfaceFrame.getUser();
         this.musicPlayer = musicPlayer;
@@ -154,6 +161,7 @@ public class GameFrame extends JFrame {
                             }
                         }
                         this.logicController = new LogicController(map,this.user,this.isTimed);
+                        this.latch.countDown();
                     } else if (input[0].equals("Move")) {
                         this.doMove(input);
                     }
