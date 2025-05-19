@@ -4,11 +4,13 @@ import logic.LogicController;
 import record.Move;
 import record.User;
 import view.*;
+import logic.AnswerFrame;
 
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
+import java.util.List;
+import java.awt.*;
 
 import static frame.Style.styleBtn;
 
@@ -23,7 +25,7 @@ public class GameFrame extends JFrame {
     private JLabel timerLabel;
     private int stepCount = 0;
     private int timeElapsed = 0;
-    private int imagePathFollowing=0;
+    private int imagePathFollowing = 0;
 
     private JPanel klotskiBoardPanel;
     private BackgroundPanel backgroundPanel;
@@ -39,21 +41,22 @@ public class GameFrame extends JFrame {
 
     /**
      * 这是第一类的有参构造器，作用是新建一个游戏界面，在选择新开始游戏时使用
-     *@param selectionFrame 上一级的视图，便于退出时进行相关设置（可能可以通过公开化方法进行消除）
+     *
+     * @param selectionFrame     上一级的视图，便于退出时进行相关设置（可能可以通过公开化方法进行消除）
      * @param userInterfaceFrame 上一级的视图，便于退出时进行相关设置（可能可以通过公开化方法进行消除）
-     * @param user 用户对象，全局应当唯一
-     * @param level 地图传入
-     * @param isTimed 模式注释
-     * @param musicPlayer 音乐播放器对象，可能需要底部新增BGM Setting
+     * @param user               用户对象，全局应当唯一
+     * @param level              地图传入
+     * @param isTimed            模式注释
+     * @param musicPlayer        音乐播放器对象，可能需要底部新增BGM Setting
      */
-    public GameFrame(LevelSelectionFrame selectionFrame,UserInterfaceFrame userInterfaceFrame,User user,Level level, boolean isTimed, MusicPlayer musicPlayer) {
+    public GameFrame(LevelSelectionFrame selectionFrame, UserInterfaceFrame userInterfaceFrame, User user, Level level, boolean isTimed, MusicPlayer musicPlayer) {
         enableEvents(AWTEvent.KEY_EVENT_MASK);
         enableEvents(AWTEvent.MOUSE_EVENT_MASK);
 
         this.selectionFrame = selectionFrame;
         this.isTimed = isTimed;
         this.user = user;
-        this.logicController = new LogicController(level,user,isTimed);
+        this.logicController = new LogicController(level, user, isTimed);
         this.musicPlayer = musicPlayer;
         this.userInterfaceFrame = userInterfaceFrame;
 
@@ -70,11 +73,12 @@ public class GameFrame extends JFrame {
 
     /**
      * 这是一个有参构造器，在读取存档时使用
+     *
      * @param userInterfaceFrame 上一级视图，可能可以消除
-     * @param logicController 游戏中控，实现游戏的核心逻辑，并导入残局
-     * @param musicPlayer 音乐播放器对象，可能需要底部新增BGM Setting
+     * @param logicController    游戏中控，实现游戏的核心逻辑，并导入残局
+     * @param musicPlayer        音乐播放器对象，可能需要底部新增BGM Setting
      */
-    public GameFrame(UserInterfaceFrame userInterfaceFrame,LogicController logicController,MusicPlayer musicPlayer) {
+    public GameFrame(UserInterfaceFrame userInterfaceFrame, LogicController logicController, MusicPlayer musicPlayer) {
         enableEvents(AWTEvent.KEY_EVENT_MASK);
         enableEvents(AWTEvent.MOUSE_EVENT_MASK);
 
@@ -98,6 +102,7 @@ public class GameFrame extends JFrame {
 
     /**
      * 这个方法会消耗一个二维数组类型的变量，生成所有的Box，并生成Boxes，并绘制
+     *
      * @param map 被消耗的地图
      */
     private void initializeKlotskiBoard(Level map) {
@@ -109,21 +114,21 @@ public class GameFrame extends JFrame {
             for (int j = 0; j < mapInitializer[0].length; j++) {
                 BoxComponent box = null;
                 if (mapInitializer[i][j] == 1) {
-                    box = new BoxComponent("/klotiskiXiaoBin.jpg", i, j,1, this);
+                    box = new BoxComponent("/klotiskiXiaoBin.jpg", i, j, 1, this);
                     box.setSize(box.GRIDSIZE, box.GRIDSIZE);
                     mapInitializer[i][j] = 0;
                 } else if (mapInitializer[i][j] == 2) {
-                    box = new BoxComponent("/klotiskiDaBin.jpg", i, j,2, this);
+                    box = new BoxComponent("/klotiskiDaBin.jpg", i, j, 2, this);
                     box.setSize(box.GRIDSIZE * 2, box.GRIDSIZE);
                     mapInitializer[i][j] = 0;
                     mapInitializer[i][j + 1] = 0;
                 } else if (mapInitializer[i][j] == 3) {
-                    box = new BoxComponent("/klotiskiGuanYu.jpg", i, j,3, this);
+                    box = new BoxComponent("/klotiskiGuanYu.jpg", i, j, 3, this);
                     box.setSize(box.GRIDSIZE, box.GRIDSIZE * 2);
                     mapInitializer[i][j] = 0;
                     mapInitializer[i + 1][j] = 0;
                 } else if (mapInitializer[i][j] == 4) {
-                    box = new BoxComponent("/klotiskiCaoCao.jpg", i, j,4, this);
+                    box = new BoxComponent("/klotiskiCaoCao.jpg", i, j, 4, this);
                     box.setSize(box.GRIDSIZE * 2, box.GRIDSIZE * 2);
                     mapInitializer[i][j] = 0;
                     mapInitializer[i + 1][j] = 0;
@@ -148,6 +153,7 @@ public class GameFrame extends JFrame {
 
     /**
      * 这是一个重载方法，主要用于读取存档时使用，依然会消耗一个二维数组类型的变量，生成所有的Box，并生成Boxes，并绘制
+     *
      * @param map 被消耗的地图
      */
     private void reloadKlotskiBoard(int[][] map) {
@@ -157,21 +163,21 @@ public class GameFrame extends JFrame {
             for (int j = 0; j < map[0].length; j++) {
                 BoxComponent box = null;
                 if (map[i][j] == 1) {
-                    box = new BoxComponent("/klotiskiXiaoBin.jpg", i, j,1, this);
+                    box = new BoxComponent("/klotiskiXiaoBin.jpg", i, j, 1, this);
                     box.setSize(box.GRIDSIZE, box.GRIDSIZE);
                     map[i][j] = 0;
                 } else if (map[i][j] == 2) {
-                    box = new BoxComponent("/klotiskiDaBin.jpg", i, j,2, this);
+                    box = new BoxComponent("/klotiskiDaBin.jpg", i, j, 2, this);
                     box.setSize(box.GRIDSIZE * 2, box.GRIDSIZE);
                     map[i][j] = 0;
                     map[i][j + 1] = 0;
                 } else if (map[i][j] == 3) {
-                    box = new BoxComponent("/klotiskiGuanYu.jpg", i, j,3, this);
+                    box = new BoxComponent("/klotiskiGuanYu.jpg", i, j, 3, this);
                     box.setSize(box.GRIDSIZE, box.GRIDSIZE * 2);
                     map[i][j] = 0;
                     map[i + 1][j] = 0;
                 } else if (map[i][j] == 4) {
-                    box = new BoxComponent("/klotiskiCaoCao.jpg", i, j,4, this);
+                    box = new BoxComponent("/klotiskiCaoCao.jpg", i, j, 4, this);
                     box.setSize(box.GRIDSIZE * 2, box.GRIDSIZE * 2);
                     map[i][j] = 0;
                     map[i + 1][j] = 0;
@@ -231,7 +237,7 @@ public class GameFrame extends JFrame {
     /**
      * 这是一个同步方法，每移动一步进行一次更新
      */
-    private void updateStepLabel(){
+    private void updateStepLabel() {
         stepsLabel.setText("Steps: " + stepCount);
     }
 
@@ -254,6 +260,7 @@ public class GameFrame extends JFrame {
 
     /**
      * 这是一个信息面板的获取方法，获取的是上方的信息，也就是步数和事件
+     *
      * @param isTimed 是否及时判断是否显示事件
      * @return 信息面板，包含步数和（可能的时间）
      */
@@ -276,9 +283,10 @@ public class GameFrame extends JFrame {
 
     /**
      * 这是一个方向面板的获取方法，获取的是左右两侧的方向按钮（基于现在这个布局下我觉得不太能美化）。
+     *
      * @return 方向控制器面板
      */
-    private JPanel getDirectionPanel(){
+    private JPanel getDirectionPanel() {
         JPanel directionPanel = new JPanel(new GridBagLayout());
         directionPanel.setOpaque(false);
         directionPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
@@ -326,15 +334,15 @@ public class GameFrame extends JFrame {
             this.musicPlayer.playSoundEffectPressingButton();
         });
         downButton.addActionListener(e -> {
-            doMove(Direction.DOWN,false);
+            doMove(Direction.DOWN, false);
             this.musicPlayer.playSoundEffectPressingButton();
         });
         leftButton.addActionListener(e -> {
-            doMove(Direction.LEFT,false);
+            doMove(Direction.LEFT, false);
             this.musicPlayer.playSoundEffectPressingButton();
         });
         rightButton.addActionListener(e -> {
-            doMove(Direction.RIGHT,false);
+            doMove(Direction.RIGHT, false);
             this.musicPlayer.playSoundEffectPressingButton();
         });
 
@@ -344,6 +352,7 @@ public class GameFrame extends JFrame {
 
     /**
      * 这是下方的控制面板的获取方法，包括多个按钮，如读档功能的GUI实现基于这个，并赋予各个按钮监听器激活对应的功能
+     *
      * @return 控制面板
      */
     private JPanel getControlPanel() {
@@ -368,7 +377,7 @@ public class GameFrame extends JFrame {
         controlPanel.add(quitButton);
 
         saveButton.addActionListener(e -> {
-            LogicController.saveGame(this.logicController,this.user);
+            LogicController.saveGame(this.logicController, this.user);
             this.musicPlayer.playSoundEffectPressingButton();
             this.isSaved = true;
         });
@@ -399,6 +408,7 @@ public class GameFrame extends JFrame {
 
     /**
      * 获取中心的游戏面板，进行叠层防止变形
+     *
      * @return 中心面板
      */
     private JPanel getBoardContainer() {
@@ -413,7 +423,7 @@ public class GameFrame extends JFrame {
      * 重新加载游戏的具体实现
      */
     private void reloadGame() {
-        for(int i = this.logicController.getMoves().size(); i > 0; i--){
+        for (int i = this.logicController.getMoves().size(); i > 0; i--) {
             withdrawMove(false);
         }
         this.musicPlayer.playSoundEffectPressingButton();
@@ -428,21 +438,22 @@ public class GameFrame extends JFrame {
 
     /**
      * 撤回的具体实现，重载也基于这个部分实现
+     *
      * @param isWithdraw 是否是撤回,判断是否需要播放音效
      */
     private void withdrawMove(boolean isWithdraw) {
-        if(this.logicController.getMoves().isEmpty()){
+        if (this.logicController.getMoves().isEmpty()) {
             JOptionPane.showMessageDialog(this, "No moves to withdraw.");
             return;
-        }else {
+        } else {
             Move withdrawedMove = this.logicController.getMoves().pop();
             this.selectedBox.setSelected(false);
-            this.selectedBox = this.getBox(withdrawedMove.getCoordinate()[0],  withdrawedMove.getCoordinate()[1], withdrawedMove.getType());
+            this.selectedBox = this.getBox(withdrawedMove.getCoordinate()[0], withdrawedMove.getCoordinate()[1], withdrawedMove.getType());
             Direction direction = Direction.getOpposite(withdrawedMove.getDirection());
             doMove(direction, true);
             this.selectedBox.setSelected(false);
             this.selectedBox = boxes.getLast();
-            if(isWithdraw){
+            if (isWithdraw) {
                 this.musicPlayer.playSoundEffectPressingButton();
                 this.musicPlayer.playSoundEffectMovingBlock();
             }
@@ -451,19 +462,12 @@ public class GameFrame extends JFrame {
     }
 
     /**
-     * 这是搜索算法的接口，后面具体的搜索代码可以在这里接入总体
-     */
-    private void showAnswer() {
-        System.out.println("Show Answer button clicked.");
-    }
-
-    /**
      * 这是退出游戏的具体实现
      * TODO: 切换的界面设置有问题，不能正确唤起用户界面
      */
     private void quitGame() {
         this.musicPlayer.playSoundEffectPressingButton();
-        if(!isSaved) {
+        if (!isSaved) {
             int result = JOptionPane.showConfirmDialog(this, "This game has not been saved. Do you really want to quit?", "Warning", JOptionPane.YES_NO_OPTION);
             if (result == JOptionPane.YES_OPTION) {
                 stopTimer();
@@ -471,7 +475,7 @@ public class GameFrame extends JFrame {
             } else {
                 return;
             }
-        }else{
+        } else {
             stopTimer();
             dispose();
         }
@@ -479,6 +483,7 @@ public class GameFrame extends JFrame {
 
     /**
      * 获得当前面板选中的方块，保证视图与底层控制的统一
+     *
      * @return 方块
      */
     public BoxComponent getSelectedBox() {
@@ -487,6 +492,7 @@ public class GameFrame extends JFrame {
 
     /**
      * 设置当前面板选中的方块，保证视图与底层控制的统一
+     *
      * @param selectedBox 方块
      */
     public void setSelectedBox(BoxComponent selectedBox) {
@@ -501,14 +507,13 @@ public class GameFrame extends JFrame {
             @Override
             public void windowClosed(WindowEvent e) {
                 stopTimer();
-                if(selectionFrame != null){
-                    if(!selectionFrame.isVisible() && !userInterfaceFrame.isVisible()){
+                if (selectionFrame != null) {
+                    if (!selectionFrame.isVisible() && !userInterfaceFrame.isVisible()) {
                         selectionFrame.setVisible(true);
                         userInterfaceFrame.setVisible(true);
                     }
-                }
-                else{
-                    if(!userInterfaceFrame.isVisible()){
+                } else {
+                    if (!userInterfaceFrame.isVisible()) {
                         userInterfaceFrame.setVisible(true);
                     }
                 }
@@ -519,10 +524,11 @@ public class GameFrame extends JFrame {
 
     /**
      * box移动的具体实现
-     * @param direction 移动的方向
+     *
+     * @param direction  移动的方向
      * @param isWithdraw 是否是撤回，决定计步
      */
-    private void doMove(Direction direction,boolean isWithdraw) {
+    private void doMove(Direction direction, boolean isWithdraw) {
         int row = selectedBox.getRow();
         int col = selectedBox.getCol();
         int[][] map = logicController.getMap();
@@ -530,7 +536,7 @@ public class GameFrame extends JFrame {
             map[row][col] = 0;
             map[row + direction.getRow()][col + direction.getCol()] = 1;
             boxRepaint(row, col, row + direction.getRow(), col + direction.getCol(), selectedBox);
-            if(!isWithdraw){
+            if (!isWithdraw) {
                 afterMove(direction);
             }
         } else if (map[row][col] == 2 && Move.validateMove(2, row + direction.getRow(), col + direction.getCol(), direction, this.logicController)) {
@@ -539,7 +545,7 @@ public class GameFrame extends JFrame {
             map[row + direction.getRow()][col + direction.getCol()] = 2;
             map[row + direction.getRow()][col + direction.getCol() + 1] = 2;
             boxRepaint(row, col, row + direction.getRow(), col + direction.getCol(), selectedBox);
-            if(!isWithdraw){
+            if (!isWithdraw) {
                 afterMove(direction);
             }
         } else if (map[row][col] == 3 && Move.validateMove(3, row + direction.getRow(), col + direction.getCol(), direction, this.logicController)) {
@@ -548,7 +554,7 @@ public class GameFrame extends JFrame {
             map[row + direction.getRow()][col + direction.getCol()] = 3;
             map[row + direction.getRow() + 1][col + direction.getCol()] = 3;
             boxRepaint(row, col, row + direction.getRow(), col + direction.getCol(), selectedBox);
-            if(!isWithdraw){
+            if (!isWithdraw) {
                 afterMove(direction);
             }
         } else if (map[row][col] == 4 && Move.validateMove(4, row + direction.getRow(), col + direction.getCol(), direction, this.logicController)) {
@@ -561,7 +567,53 @@ public class GameFrame extends JFrame {
             map[row + direction.getRow() + 1][col + direction.getCol()] = 4;
             map[row + direction.getRow() + 1][col + direction.getCol() + 1] = 4;
             boxRepaint(row, col, row + direction.getRow(), col + direction.getCol(), selectedBox);
-            if(!isWithdraw){
+            if (!isWithdraw) {
+                afterMove(direction);
+            }
+        }
+    }
+
+    private void doMove(int x, int y, int type, Direction direction, boolean isWithdraw) {
+        this.selectedBox = getBox(x, y, type);
+        int row = selectedBox.getRow();
+        int col = selectedBox.getCol();
+        int[][] map = logicController.getMap();
+        if (this.logicController.getMap()[row][col] == 1 && Move.validateMove(1, row + direction.getRow(), col + direction.getCol(), direction, this.logicController)) {
+            map[row][col] = 0;
+            map[row + direction.getRow()][col + direction.getCol()] = 1;
+            boxRepaint(row, col, row + direction.getRow(), col + direction.getCol(), selectedBox);
+            if (!isWithdraw) {
+                afterMove(direction);
+            }
+        } else if (map[row][col] == 2 && Move.validateMove(2, row + direction.getRow(), col + direction.getCol(), direction, this.logicController)) {
+            map[row][col] = 0;
+            map[row][col + 1] = 0;
+            map[row + direction.getRow()][col + direction.getCol()] = 2;
+            map[row + direction.getRow()][col + direction.getCol() + 1] = 2;
+            boxRepaint(row, col, row + direction.getRow(), col + direction.getCol(), selectedBox);
+            if (!isWithdraw) {
+                afterMove(direction);
+            }
+        } else if (map[row][col] == 3 && Move.validateMove(3, row + direction.getRow(), col + direction.getCol(), direction, this.logicController)) {
+            map[row][col] = 0;
+            map[row + 1][col] = 0;
+            map[row + direction.getRow()][col + direction.getCol()] = 3;
+            map[row + direction.getRow() + 1][col + direction.getCol()] = 3;
+            boxRepaint(row, col, row + direction.getRow(), col + direction.getCol(), selectedBox);
+            if (!isWithdraw) {
+                afterMove(direction);
+            }
+        } else if (map[row][col] == 4 && Move.validateMove(4, row + direction.getRow(), col + direction.getCol(), direction, this.logicController)) {
+            map[row][col] = 0;
+            map[row][col + 1] = 0;
+            map[row + 1][col] = 0;
+            map[row + 1][col + 1] = 0;
+            map[row + direction.getRow()][col + direction.getCol()] = 4;
+            map[row + direction.getRow()][col + direction.getCol() + 1] = 4;
+            map[row + direction.getRow() + 1][col + direction.getCol()] = 4;
+            map[row + direction.getRow() + 1][col + direction.getCol() + 1] = 4;
+            boxRepaint(row, col, row + direction.getRow(), col + direction.getCol(), selectedBox);
+            if (!isWithdraw) {
                 afterMove(direction);
             }
         }
@@ -569,10 +621,11 @@ public class GameFrame extends JFrame {
 
     /**
      * 这个方法用于重绘方块，主要是为了实现移动的效果
-     * @param row 可移除，当前的行数
-     * @param col 可移除，当前的列数
-     * @param nextRow 不可移除，为方块设置新的位置的行数
-     * @param nextCol 不可移除，为方块设置新的位置的列数
+     *
+     * @param row         可移除，当前的行数
+     * @param col         可移除，当前的列数
+     * @param nextRow     不可移除，为方块设置新的位置的行数
+     * @param nextCol     不可移除，为方块设置新的位置的列数
      * @param selectedBox 不可移除，当前选中的方块
      */
     private void boxRepaint(int row, int col, int nextRow, int nextCol, BoxComponent selectedBox) {
@@ -584,6 +637,7 @@ public class GameFrame extends JFrame {
 
     /**
      * 这个方法用于在每次移动后进行计步和判断游戏是否结束，并会记录移动，便于实现撤回和通信
+     *
      * @param direction 移动的方向
      */
     private void afterMove(Direction direction) {
@@ -591,12 +645,13 @@ public class GameFrame extends JFrame {
         updateStepLabel();
 
         this.logicController.setStep(stepCount);
-        this.logicController.record(this.selectedBox,direction);
+        this.logicController.record(this.selectedBox, direction);
         this.musicPlayer.playSoundEffectMovingBlock();
-        if(this.logicController.isGameOver(stepCount)){
+        if (this.logicController.isGameOver(stepCount)) {
             showVictoryDialog();
         }
     }
+
     /**
      * 这是一个用以生成结束的对话框
      */
@@ -625,6 +680,7 @@ public class GameFrame extends JFrame {
             dispose();
         }
     }
+
     /**
      * 这是一个键盘绑定的实现，主要是为了实现键盘的控制
      */
@@ -644,28 +700,28 @@ public class GameFrame extends JFrame {
             actionMap.put("moveUp", new AbstractAction() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    doMove(Direction.UP,false);
+                    doMove(Direction.UP, false);
                 }
             });
 
             actionMap.put("moveDown", new AbstractAction() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    doMove(Direction.DOWN,false);
+                    doMove(Direction.DOWN, false);
                 }
             });
 
             actionMap.put("moveLeft", new AbstractAction() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    doMove(Direction.LEFT,false);
+                    doMove(Direction.LEFT, false);
                 }
             });
 
             actionMap.put("moveRight", new AbstractAction() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    doMove(Direction.RIGHT,false);
+                    doMove(Direction.RIGHT, false);
                 }
             });
 
@@ -686,6 +742,7 @@ public class GameFrame extends JFrame {
 
     /**
      * 这是一个获取当前的boxes的方法
+     *
      * @return boxes
      */
     public ArrayList<BoxComponent> getBoxes() {
@@ -694,17 +751,66 @@ public class GameFrame extends JFrame {
 
     /**
      * 查询对应的box，撤回的重要工具函数
-     * @param row 查找板块的行数
-     * @param col 查找板块的列数
+     *
+     * @param row  查找板块的行数
+     * @param col  查找板块的列数
      * @param type 查找板块的属性
      * @return
      */
-    public BoxComponent getBox(int row, int col,int type) {
+    public BoxComponent getBox(int row, int col, int type) {
         for (BoxComponent box : boxes) {
             if (box.getRow() == row && box.getCol() == col && box.getType() == type) {
                 return box;
             }
         }
         return null;
+    }
+
+
+    /**
+     * autoAnswer的按钮
+     */
+    private void showAnswer() {
+        int[][] currentMap = logicController.getMap();
+        AnswerFrame answerFrame = new AnswerFrame(logicController);
+        List<Direction> solution = answerFrame.getFinalSolution();
+        List<Integer> x_selected = answerFrame.getX_selected();
+        List<Integer> y_selected = answerFrame.getY_selected();
+        List<Integer> type_selected = answerFrame.getType_selected();
+        if (solution == null) {
+            JOptionPane.showMessageDialog(this, "No solution found!");
+            return;
+        }
+        for (int i = 0; i < solution.size(); i++) {
+            JOptionPane optionPane = new JOptionPane(
+                    "This game has not been saved. Do you really want to quit?",
+                    JOptionPane.WARNING_MESSAGE,
+                    JOptionPane.YES_NO_OPTION
+            );
+            JDialog dialog = optionPane.createDialog(this, "Warning");
+
+            // 计算并设置对话框位置（顶部居中）
+            Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+            dialog.pack(); // 调整对话框大小以适应内容
+            int x = (screenSize.width - dialog.getWidth()) / 2; // 水平居中
+            int y = 0; // 垂直顶部
+            dialog.setLocation(x, y);
+
+            dialog.setVisible(true);
+            int result = (Integer) optionPane.getValue();
+
+            if (result == JOptionPane.YES_OPTION) {
+                doMove(x_selected.get(i), y_selected.get(i), type_selected.get(i), solution.get(i), false);
+            } else {
+                return;
+            }
+        }
+
+        /*for (int i=0;i<solution.size();i++) {
+//            answerDoMove(x_selected.get(i),y_selected.get(i),type_selected.get(i),solution.get(i), false);
+
+            System.out.println("x: " + x_selected.get(i) + " y: " + y_selected.get(i) + " type: " + type_selected.get(i) + " direction: " + solution.get(i));
+
+        }*/
     }
 }

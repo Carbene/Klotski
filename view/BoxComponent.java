@@ -185,7 +185,7 @@ public class BoxComponent extends JComponent {
     /**
      * 实现方块的选中
      */
-    private void doSelect() {
+    public void doSelect() {
 
         if(this.owner.getSelectedBox() != null && this.owner.getSelectedBox() != this) {
 
