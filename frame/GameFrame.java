@@ -16,7 +16,9 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.concurrent.CountDownLatch;
+import java.util.Queue;
 
 import static frame.Style.styleBtn;
 
@@ -28,9 +30,11 @@ public class GameFrame extends JFrame {
     private boolean isTimed;
     private ServerSocket serverSocket;
     private Socket socket;
-    public boolean isSpectator;
-    private boolean spectatorMemory;
+    private Socket clientSocket;
+    private BufferedReader in;
     private PrintWriter out;
+    public boolean isSpectator;
+    private Queue<String> messages;
 
     private JLabel stepsLabel;
     private JLabel timerLabel;
@@ -67,19 +71,19 @@ public class GameFrame extends JFrame {
         this.selectionFrame = selectionFrame;
         this.isTimed = isTimed;
         this.user = user;
-        this.logicController = new LogicController(level,user,isTimed);
+        this.logicController = new LogicController(level,user,isTimed,false);
         this.musicPlayer = musicPlayer;
         this.userInterfaceFrame = userInterfaceFrame;
         this.isSpectator = false;
-        this.spectatorMemory = false;
+        this.messages = new LinkedList<>();
 
         setTitle("Klotski Game");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setUndecorated(true);
         setExtendedState(JFrame.MAXIMIZED_BOTH);
 
-        getBackgroundPanel(spectatorMemory);
-        setServerSocketSocket();
+        getBackgroundPanel(false);
+        this.setClientSocket();
         initializeKlotskiBoard(level);
         setListener();
 
@@ -97,21 +101,19 @@ public class GameFrame extends JFrame {
 
         this.logicController = logicController;
         this.user = userInterfaceFrame.getUser();
-        this.logicController = logicController;
         this.isTimed = logicController.getTime() != 0;
         this.musicPlayer = musicPlayer;
         this.stepCount = logicController.getStep();
         this.timeElapsed = logicController.getTime();
         this.isSpectator = false;
-        this.spectatorMemory = false;
 
         setTitle("Klotski Game");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setUndecorated(true);
         setExtendedState(JFrame.MAXIMIZED_BOTH);
 
-        getBackgroundPanel(spectatorMemory);
-        setServerSocketSocket();
+        getBackgroundPanel(false);
+        setClientSocket();
         loadKlotskiBoard(LogicController.copyMap(this.logicController.getMap()));
         setListener();
     }
@@ -120,13 +122,6 @@ public class GameFrame extends JFrame {
         enableEvents(AWTEvent.KEY_EVENT_MASK);
         enableEvents(AWTEvent.MOUSE_EVENT_MASK);
         this.socket = socket;
-        this.setSocket();
-        try {
-            latch.await();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
         this.user = userInterfaceFrame.getUser();
         this.musicPlayer = musicPlayer;
         this.stepCount = logicController.getStep();
@@ -138,46 +133,38 @@ public class GameFrame extends JFrame {
         setUndecorated(true);
         setExtendedState(JFrame.MAXIMIZED_BOTH);
 
-        getBackgroundPanel(this.spectatorMemory);
-        loadKlotskiBoard(LogicController.copyMap(this.logicController.getMap()));
+        getBackgroundPanel(true);
+        this.setSocket();
         setListener();
     }
 
     private void setSocket() {
        new Thread(() -> {
             try {
-                BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
+                this.in = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
                 this.out = new PrintWriter(socket.getOutputStream(),true);
                 String line;
                 while ((line = in.readLine()) != null) {
                     String[] input = line.split(" ");
                     if(input[0].equals("Map")){
-                        this.stepCount = Integer.parseInt(input[1]);
-                        this.timeElapsed = Integer.parseInt(input[2]);
-                        int[][] map = new int[4][5];
-                        for (int i = 0; i < 4; i++) {
-                            for (int j = 0; j < 5; j++) {
-                                map[i][j] = Integer.parseInt(input[i * 5 + j + 3]);
-                            }
-                        }
-                        this.logicController = new LogicController(map,this.user,this.isTimed);
-                        this.latch.countDown();
+                        this.logicController = new LogicController(Level.getLevel(Integer.parseInt(input[1])),this.user,false,true);
+                        initializeKlotskiBoard(Level.getLevel(Integer.parseInt(input[1])));
                     } else if (input[0].equals("Move")) {
                         this.doMove(input);
                     }
-                }
-                if (line.equals("Confirm")) {
-                    this.isSpectator = true;
-                    JOptionPane.showMessageDialog(this, "Now you have one move chance.");
-                }
-                if(line.equals("Requesting help")){
-                    int choice = JOptionPane.showConfirmDialog(this,"Confirm to help","Confirmation",JOptionPane.YES_NO_OPTION);
-                    if(choice == JOptionPane.YES_OPTION){
-                        this.sendMessage("Confirm");
-                        this.isSpectator = false;
+                    if (line.equals("Confirm")) {
+                        this.isSpectator = true;
                         JOptionPane.showMessageDialog(this, "Now you have one move chance.");
-                    }else{
-                        this.sendMessage("Cancel");
+                    }
+                    if(line.equals("Requesting help")){
+                        int choice = JOptionPane.showConfirmDialog(this,"Confirm to help","Confirmation",JOptionPane.YES_NO_OPTION);
+                        if(choice == JOptionPane.YES_OPTION){
+                            this.sendMessage("Confirm");
+                            this.isSpectator = false;
+                            JOptionPane.showMessageDialog(this, "Now you have one move chance.");
+                        }else{
+                            this.sendMessage("Cancel");
+                        }
                     }
                 }
             } catch (IOException e) {
@@ -186,39 +173,26 @@ public class GameFrame extends JFrame {
         }).start();
     }
 
-    private void setServerSocketSocket() {
-        try {
-            this.serverSocket = new ServerSocket(8080);
-        } catch (IOException e) {
-            e.printStackTrace();
+    private void setClientSocket() {
+        if(isTimed){
+            return;
         }
         new Thread(() -> {
             try {
-                Socket ClientSocket = serverSocket.accept();
-                BufferedReader in = new BufferedReader(new InputStreamReader(ClientSocket.getInputStream(), StandardCharsets.UTF_8));
-                this.out = new PrintWriter(ClientSocket.getOutputStream(),true);
-                String map = "Map " + this.stepCount + " " + this.timeElapsed + " ";
-                for(int i = 0; i < this.logicController.getMap().length; i++){
-                    for(int j = 0; j < this.logicController.getMap()[0].length; j++){
-                        map += this.logicController.getMap()[i][j] + " ";
+                this.serverSocket = new ServerSocket(8080);
+                while(true){
+                    this.clientSocket = serverSocket.accept();
+                    if(this.clientSocket != null){
+                        this.in = new BufferedReader(new InputStreamReader(this.clientSocket.getInputStream(),StandardCharsets.UTF_8));
+                        this.out = new PrintWriter(this.clientSocket.getOutputStream(),true);
+                        break;
                     }
                 }
-                this.sendMessage(map);
-                while(true){
-                    String line = in.readLine();
-                    if(line.equals("Available help")){
-                        int result = JOptionPane.showConfirmDialog(this, "Available Help", "Warning", JOptionPane.YES_NO_OPTION);
-                        if (result == JOptionPane.YES_OPTION) {
-                            this.sendMessage("Confirm");
-                            this.isSpectator = true;
-                        } else {
-                            this.sendMessage("Cancel");
-                        }
+                if(this.messages.size() > 0){
+                    for(String message : this.messages){
+                        out.println(message);
                     }
-                    if(line.equals("Confirm")){
-                        this.isSpectator = false;
-                        JOptionPane.showMessageDialog(this, "The spectator rejects to help.");
-                    }
+                    this.messages.clear();
                 }
             } catch (IOException e){
                 e.printStackTrace();
@@ -231,7 +205,7 @@ public class GameFrame extends JFrame {
         if(this.out != null){
             out.println(str);
         }else{
-            return;
+            this.messages.add(str);
         }
     }
 
@@ -283,6 +257,13 @@ public class GameFrame extends JFrame {
         klotskiBoardPanel.repaint();
         klotskiBoardPanel.setFocusable(true);
         this.blocks = blocks;
+        if(!isSpectator){
+            if(this.clientSocket != null){
+                this.out.println("Map " + map.getCODE());
+            }else{
+                this.messages.add("Map " + map.getCODE());
+            }
+        }
     }
 
     /**
@@ -377,7 +358,7 @@ public class GameFrame extends JFrame {
     /**
      * 这是一个背景面板的获得方法，它会接受所有的组件，并最终整合成一体
      */
-    private void getBackgroundPanel(boolean spectatorMemory) {
+    private void getBackgroundPanel(boolean isSpectator) {
         this.backgroundPanel = new BackgroundPanel("/gameBackgroundPic.jpg");
         backgroundPanel.setLayout(new BorderLayout(10, 10));
         setContentPane(backgroundPanel);
@@ -386,7 +367,7 @@ public class GameFrame extends JFrame {
 
         backgroundPanel.add(getInfoPanel(isTimed), BorderLayout.NORTH);
         backgroundPanel.add(getBoardContainer(), BorderLayout.CENTER);
-        backgroundPanel.add(getControlPanel(spectatorMemory), BorderLayout.SOUTH);
+        backgroundPanel.add(getControlPanel(isSpectator), BorderLayout.SOUTH);
         backgroundPanel.add(getDirectionPanel(), BorderLayout.EAST);
         backgroundPanel.add(getDirectionPanel(), BorderLayout.WEST);
     }
@@ -734,13 +715,15 @@ public class GameFrame extends JFrame {
                 afterMove(direction);
             }
         }
-        this.isSpectator = this.spectatorMemory;
+        this.isSpectator = this.logicController.getIsSpectator();
     }
 
     private void doMove(String[] input){
         this.selectedBlock = getBlock(Integer.parseInt(input[1]),Integer.parseInt(input[2]),Integer.parseInt(input[3]));
         Direction direction = Direction.getDirection(Integer.parseInt(input[4]));
         doMove(direction,false);
+        this.selectedBlock = this.blocks.getLast();
+        repaint();
     }
 
     /**
@@ -774,6 +757,11 @@ public class GameFrame extends JFrame {
         this.musicPlayer.playSoundEffectMovingBlock();
         if(this.logicController.isGameOver(stepCount)){
             showVictoryDialog();
+        }
+        if(this.clientSocket == null){
+            this.messages.add(this.logicController.getMoves().getLast().toString());
+        }else{
+            this.out.println(this.logicController.getMoves().getLast().toString());
         }
     }
     /**

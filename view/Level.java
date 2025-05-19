@@ -88,4 +88,13 @@ public enum Level {
     public int getCODE() {
         return CODE;
     }
+
+    public static Level getLevel(int CODE) {
+        for (Level level : Level.values()) {
+            if (level.getCODE() == CODE) {
+                return level;
+            }
+        }
+        return null;
+    }
 }

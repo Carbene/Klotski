@@ -23,6 +23,7 @@ public class UserInterfaceFrame extends JFrame {
     private BackgroundPanel background;
     private JPanel buttonPanel;
     private transient MusicPlayer musicPlayer;
+    private String host = "";
     private Socket socket;
 
     /**
@@ -152,15 +153,44 @@ public class UserInterfaceFrame extends JFrame {
         styleBtn(spectateBtn);
         buttonPanel.add(spectateBtn);
         spectateBtn.addActionListener(e -> {
+            getHost();
             try{
-                this.socket = new Socket("local host",8080);
+                this.socket = new Socket(host,8080);
             }catch (IOException exception){
                 exception.printStackTrace();
                 JOptionPane.showMessageDialog(null,"Could not connect to server");
                 return;
             }
             GameFrame gameFrame = new GameFrame(this,this.musicPlayer,this.socket);
+            gameFrame.setVisible(true);
+            this.setVisible(false);
         });
+    }
+
+    private void getHost() {
+
+        JDialog hostDialog = new JDialog(this, "Server host setting", true);
+        hostDialog.setLayout(new FlowLayout());
+        hostDialog.add(new JLabel("Please input the host:"));
+        JTextField textField = new JTextField(15);
+        hostDialog.add(textField);
+        JButton submmitButton = new JButton("Submit");
+        hostDialog.add(submmitButton);
+        submmitButton.addActionListener(e -> {
+            String input = textField.getText();
+            if(input.isEmpty()){
+                JOptionPane.showMessageDialog(null,"Please input a valid host");
+                textField.setText("");
+                return;
+            }
+            this.host = input;
+            hostDialog.dispose();
+        });
+        hostDialog.setSize(300, 100);
+        hostDialog.setLocationRelativeTo(this);
+        hostDialog.setVisible(true);
+        hostDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+
     }
 
     private void setLoadGameButton() {

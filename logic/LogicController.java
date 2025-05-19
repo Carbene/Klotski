@@ -23,6 +23,7 @@ public class LogicController implements Serializable {
     private final static int HEIGHT = 4;
     private final static int WIDTH = 5;
     private String saveFileName;
+    private final boolean isSpectator;
 
     /**
      * 有参构造器，构造一个新的逻辑
@@ -30,22 +31,15 @@ public class LogicController implements Serializable {
      * @param user 当前玩家
      * @param isTimed 当前模式
      */
-    public LogicController(Level level,User user,boolean isTimed) {
+    public LogicController(Level level,User user,boolean isTimed,boolean isSpectator) {
         this.map = LogicController.copyMap(level);
         this.user = user;
         this.moves = new Stack<>();
         this.isTimed = isTimed;
         this.level = level;
         this.saveFileName = null;
+        this.isSpectator = isSpectator;
     }
-
-    public LogicController(int[][] map, User user, boolean isTimed) {
-        this.map = LogicController.copyMap(map);
-        this.user = user;
-        this.isTimed = isTimed;
-        this.moves = null;
-    }
-
 
     /**
      * 获取当前矩阵记录下的位置信息，占位信息
@@ -251,6 +245,15 @@ public class LogicController implements Serializable {
             }
         }
         return null;
+    }
+
+    public boolean getIsSpectator() {
+        return isSpectator;
+    }
+
+    @Override
+    public String toString(){
+        return "Map "+ level.getCODE();
     }
 
 }
