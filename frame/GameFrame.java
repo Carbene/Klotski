@@ -204,6 +204,9 @@ public class GameFrame extends JFrame {
                         int choice = JOptionPane.showConfirmDialog(this,"Confirm to accept help","Confirmation",JOptionPane.YES_NO_OPTION);
                         if(choice == JOptionPane.YES_OPTION){
                             this.sendMessage("Confirm");
+                            this.selectedBlock.setSelected(false);
+                            this.selectedBlock = this.blocks.getLast();
+                            repaint();
                             this.isSpectator = true;
                         }else{
                             this.sendMessage("Cancel");
@@ -773,6 +776,7 @@ public class GameFrame extends JFrame {
     /**
      * 这个方法用于在每次移动后进行计步和判断游戏是否结束，并会记录移动，便于实现撤回和通信
      * @param direction 移动的方向
+     *TODO: Some weird problem occurs here?
      */
     private void afterMove(Direction direction) {
         stepCount++;
