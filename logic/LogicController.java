@@ -229,5 +229,23 @@ public class LogicController implements Serializable {
         }
         return null;
     }
+    /**
+     * 变更地图状态
+     */
+    public void changeMap(int[][] map) {
+        this.map = map;
+    }
+    /**
+     * 复制map
+     */
+    public int[][] deepCopyMap() {
+        if (this.map == null) return null;
 
+        int[][] copy = new int[this.map.length][];
+        for (int i = 0; i < this.map.length; i++) {
+            copy[i] = new int[this.map[i].length];
+            System.arraycopy(this.map[i], 0, copy[i], 0, this.map[i].length);
+        }
+        return copy;
+    }
 }
