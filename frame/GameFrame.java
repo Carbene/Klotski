@@ -390,8 +390,7 @@ public class GameFrame extends JFrame {
         int seconds = timeElapsed % 60;
         this.logicController.setTime(minutes * 60 + seconds);
         timerLabel.setText(String.format("Time: %02d:%02d", minutes, seconds));
-        if(timeElapsed >= 600){
-            JOptionPane.showMessageDialog(this, "Time out! Game over.");
+        if(timeElapsed >= 300){
             int choice = JOptionPane.showConfirmDialog(this,"Time out! Game over.");
             if(choice == JOptionPane.YES_OPTION || choice == JOptionPane.NO_OPTION || choice == JOptionPane.CLOSED_OPTION){
                 stopTimer();
@@ -399,6 +398,7 @@ public class GameFrame extends JFrame {
                 this.logicController.setTime(0);
                 this.logicController.setStep(0);
                 this.dispose();
+                this.userInterfaceFrame.setVisible(true);
             }
 
         }
