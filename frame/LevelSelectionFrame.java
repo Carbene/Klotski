@@ -12,7 +12,7 @@ import java.awt.*;
  */
 public class LevelSelectionFrame extends JDialog {
     private String selectedLevel;
-    private String[] levels = {"1", "2", "3", "4","5"};
+    private String[] levels;
     private JLabel previewLabel;
     private JLabel achievementStepsLabel;
     private JLabel achivementTimeLabel;
@@ -28,6 +28,10 @@ public class LevelSelectionFrame extends JDialog {
     public LevelSelectionFrame(Frame owner,User user) {
         super(owner, "Select Level", true);
         this.user = user;
+        levels = new String[Level.values().length];
+        for(Level level : Level.values()) {
+            levels[level.getCODE() - 1] = String.valueOf(level.getCODE());
+        }
         setSize(500, 400);
         setLocationRelativeTo(owner);
         setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);

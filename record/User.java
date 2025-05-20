@@ -153,7 +153,8 @@ public class User implements Serializable {
      * @param achievement 新的成就
      */
     public static void setBestRecord(Level level, User user, int mode, int achievement){
-        user.bestRecord[level.ordinal()][mode] = achievement;
+        user.bestRecord[level.getCODE() - 1][mode] = achievement;
+        User.serialize(user);
     }
 
     /**

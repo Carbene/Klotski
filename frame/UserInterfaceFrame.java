@@ -6,6 +6,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.ArrayList;
 
 import logic.LogicController;
 import record.*;
@@ -22,7 +23,7 @@ public class UserInterfaceFrame extends JFrame {
     private User user;
     private BackgroundPanel background;
     private JPanel buttonPanel;
-    private transient MusicPlayer musicPlayer;
+    public transient MusicPlayer musicPlayer;
     private String host = "";
     private Socket socket;
 
@@ -99,6 +100,7 @@ public class UserInterfaceFrame extends JFrame {
         setStartGameButton();
         setLoadGameButton();
         setSpectatorButton();
+        setViewRankButton();
         setBGMButton();
         setLogoutButton();
         background.add(buttonPanel, BorderLayout.SOUTH);
@@ -167,6 +169,16 @@ public class UserInterfaceFrame extends JFrame {
         });
     }
 
+    private void setViewRankButton() {
+        JButton viewRankButton = new JButton("View the Rank");
+        styleBtn(viewRankButton);
+        buttonPanel.add(viewRankButton);
+        viewRankButton.addActionListener(e -> {
+            RankFrame rankFrame = new RankFrame(this.musicPlayer);
+            rankFrame.setVisible(true);
+        });
+    }
+
     private void getHost() {
 
         JDialog hostDialog = new JDialog(this, "Server host setting", true);
@@ -228,7 +240,10 @@ public class UserInterfaceFrame extends JFrame {
             this.setVisible(false);
         }
     }
-    // TODO:这里应当加入一个观战的具体实现
+
+    private void viewRank(){
+
+    }
 
     /**
      * 获取当前用户，也许用户应该是全局唯一的

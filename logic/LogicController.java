@@ -68,10 +68,10 @@ public class LogicController implements Serializable {
         if(map[3][1] == 4 && map[3][2] == 4 && map[4][1] == 4 && map[4][2] == 4) {
             if(user.getUserSymbol()==1){
                 if(level!=null&&user!=null){
-                    if(User.getBestRecord(user,level.getCODE(),0) > this.step) {
+                    if(User.getBestRecord(user,level.getCODE(),0) > this.step || User.getBestRecord(user,level.getCODE(),0) == 0) {
                         User.setBestRecord(level,user,0,step);
                     }
-                    if(User.getBestRecord(user,level.getCODE(),1) > this.time) {
+                    if(User.getBestRecord(user,level.getCODE(),1) > this.time || User.getBestRecord(user,level.getCODE(),1) == 0) {
                         User.setBestRecord(level,user,1,time);
                     }
                 }
@@ -171,16 +171,15 @@ public class LogicController implements Serializable {
             if(controller.saveFileName == null) {
                 JFileChooser fileChooser = new JFileChooser();
                 fileChooser.setDialogTitle("Find your directory to save");
-                fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+                fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
                 int result = fileChooser.showSaveDialog(null);
                 if (result == JFileChooser.CANCEL_OPTION) {
                     return false;
                 }
-                String filePath = fileChooser.getSelectedFile().getAbsolutePath();
-                String fileName = System.currentTimeMillis() + ".save";
+                String fileName = fileChooser.getSelectedFile() + ".save";
                 try{
-                    controller.saveFileName = filePath+File.separator+fileName;
-                    FileOutputStream fileOut = new FileOutputStream(filePath+ File.separator+fileName);
+                    controller.saveFileName = fileName;
+                    FileOutputStream fileOut = new FileOutputStream(fileName);
                     ObjectOutputStream objectOut = new ObjectOutputStream(fileOut);
                     objectOut.writeObject(controller);
                     objectOut.close();

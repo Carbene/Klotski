@@ -831,6 +831,7 @@ public class GameFrame extends JFrame {
         } else {
             stopTimer();
             dispose();
+            userInterfaceFrame.setVisible(true);
         }
     }
     /**
