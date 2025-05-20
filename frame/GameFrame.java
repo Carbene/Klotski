@@ -85,7 +85,6 @@ public class GameFrame extends JFrame {
         getBackgroundPanel(false);
         this.setClientSocket();
         initializeKlotskiBoard(level);
-        setListener();
 
     }
 
@@ -106,6 +105,7 @@ public class GameFrame extends JFrame {
         this.stepCount = logicController.getStep();
         this.timeElapsed = logicController.getTime();
         this.isSpectator = false;
+        this.userInterfaceFrame = userInterfaceFrame;
 
         setTitle("Klotski Game");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -115,7 +115,6 @@ public class GameFrame extends JFrame {
         getBackgroundPanel(false);
         setClientSocket();
         loadKlotskiBoard(LogicController.copyMap(this.logicController.getMap()));
-        setListener();
     }
 
     public GameFrame(UserInterfaceFrame userInterfaceFrame,MusicPlayer musicPlayer, Socket socket) {
@@ -125,6 +124,7 @@ public class GameFrame extends JFrame {
         this.user = userInterfaceFrame.getUser();
         this.musicPlayer = musicPlayer;
         this.isSpectator = true;
+        this.userInterfaceFrame = userInterfaceFrame;
 
         setTitle("Klotski Game");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -133,7 +133,6 @@ public class GameFrame extends JFrame {
 
         getBackgroundPanel(true);
         this.setSocket();
-        setListener();
     }
 
     private void setSocket() {
@@ -149,7 +148,11 @@ public class GameFrame extends JFrame {
                         this.logicController = new LogicController(Level.getLevel(Integer.parseInt(input[1])),this.user,false,true);
                         initializeKlotskiBoard(Level.getLevel(Integer.parseInt(input[1])));
                     } else if (input[0].equals("Move")) {
-                        this.doMove(input);
+                        try{
+                            this.doMove(input);
+                        }catch(NullPointerException e){
+                            e.printStackTrace();
+                        }
                     }
                     if(line.equals("Requesting help")){
                         int choice = JOptionPane.showConfirmDialog(this,"Confirm to help","Confirmation",JOptionPane.YES_NO_OPTION);
@@ -206,11 +209,14 @@ public class GameFrame extends JFrame {
                             this.sendMessage("Confirm");
                             this.selectedBlock.setSelected(false);
                             this.selectedBlock = this.blocks.getLast();
-                            repaint();
                             this.isSpectator = true;
                         }else{
                             this.sendMessage("Cancel");
                         }
+                    }else if(line.equals("Confirm")){
+                        this.selectedBlock.setSelected(false);
+                        this.selectedBlock = this.blocks.getLast();
+                        this.isSpectator = true;
                     }
                 }
             } catch (IOException e){
@@ -641,17 +647,19 @@ public class GameFrame extends JFrame {
      */
     private void quitGame() {
         this.musicPlayer.playSoundEffectPressingButton();
-        if(!isSaved) {
+        if(!isSaved && !this.logicController.getIsSpectator()){
             int result = JOptionPane.showConfirmDialog(this, "This game has not been saved. Do you really want to quit?", "Warning", JOptionPane.YES_NO_OPTION);
             if (result == JOptionPane.YES_OPTION) {
                 stopTimer();
                 this.dispose();
+                this.userInterfaceFrame.setVisible(true);
             } else {
                 return;
             }
         }else{
             stopTimer();
             dispose();
+            this.userInterfaceFrame.setVisible(true);
         }
     }
 
@@ -673,27 +681,18 @@ public class GameFrame extends JFrame {
 
     /**
      * 为游戏面板设置监听器
-     */
+     *//*
     private void setListener() {
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosed(WindowEvent e) {
                 stopTimer();
-                if(selectionFrame != null){
-                    if(!selectionFrame.isVisible() && !userInterfaceFrame.isVisible()){
-                        selectionFrame.setVisible(true);
-                        userInterfaceFrame.setVisible(true);
-                    }
-                }
-                else{
-                    if(!userInterfaceFrame.isVisible()){
-                        userInterfaceFrame.setVisible(true);
-                    }
-                }
+                this.
+
             }
         });
 
-    }
+    }*/
 
     /**
      * block移动的具体实现

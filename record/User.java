@@ -13,8 +13,8 @@ public class User implements Serializable {
     private final String id;
     private final String password;
     private int[][] bestRecord;
-    private static final String DIRECTORY = "src/record/userInfo";
-    private int userSymbol=0;
+    private static final String DIRECTORY = "./userInfo";
+    private int userSymbol = 0;
     /**
      * 有参构造器，构造的是正常的用户，并会本地建立副本
      * @param id 用户名
@@ -23,7 +23,7 @@ public class User implements Serializable {
     public User(String id, String password) {
         this.id = id;
         this.password = password;
-        this.userSymbol=1;
+        this.userSymbol = 1;
         this.bestRecord = new int[Level.values().length][2];
         User.serialize(this);
     }
@@ -34,7 +34,7 @@ public class User implements Serializable {
     public User(){
         this.id = "Visitor";
         this.password = null;
-        this.userSymbol=0;
+        this.userSymbol = 0;
         User.serialize(this);
 
     }
@@ -45,6 +45,9 @@ public class User implements Serializable {
      */
     public static void serialize(User user) {
         try {
+            if(!new File(User.DIRECTORY).exists()) {
+                new File(User.DIRECTORY).mkdirs();
+            }
             FileOutputStream fileOut = new FileOutputStream(User.DIRECTORY+File.separator+user.id);
             ObjectOutputStream out = new ObjectOutputStream(fileOut);
             out.writeObject(user);

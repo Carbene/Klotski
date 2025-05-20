@@ -195,8 +195,5 @@ public class Block extends JComponent {
         return type;
     }
 
-
-
-
 }
 
