@@ -49,7 +49,7 @@ public class UserInterfaceFrame extends JFrame {
      * 切换背景音乐的播放状态，似乎应该是公开的
      * TODO: 也许应该公开，全局调用？
      */
-    private void shiftPlayStatus() {
+    public void shiftPlayStatus() {
         bgmEnabled = !bgmEnabled;
         if (bgmEnabled) {
             musicPlayer.playBGM();

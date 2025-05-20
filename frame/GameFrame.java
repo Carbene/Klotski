@@ -539,6 +539,7 @@ public class GameFrame extends JFrame {
             JButton reloadButton = new JButton("Reload");
             JButton answerButton = new JButton("Show Answer");
             JButton requestHelpButton = new JButton("Request Help");
+            JButton bgmSettingButton = new JButton("BGM Setting");
             JButton quitButton = new JButton("Quit");
 
             styleBtn(saveButton);
@@ -546,6 +547,7 @@ public class GameFrame extends JFrame {
             styleBtn(reloadButton);
             styleBtn(answerButton);
             styleBtn(requestHelpButton);
+            styleBtn(bgmSettingButton);
             styleBtn(quitButton);
 
             controlPanel.add(saveButton);
@@ -553,6 +555,7 @@ public class GameFrame extends JFrame {
             controlPanel.add(reloadButton);
             controlPanel.add(answerButton);
             controlPanel.add(requestHelpButton);
+            controlPanel.add(bgmSettingButton);
             controlPanel.add(quitButton);
 
             saveButton.addActionListener(e -> {
@@ -570,22 +573,31 @@ public class GameFrame extends JFrame {
                     JOptionPane.showMessageDialog(this, "No spectator available.");
                 }
             });
+            bgmSettingButton.addActionListener(e -> {
+                this.userInterfaceFrame.shiftPlayStatus();
+            });
             quitButton.addActionListener(e -> quitGame());
 
             return controlPanel;
         }else{
             JButton offerHelpButton = new JButton("Offer help");
+            JButton bgmSettingButton = new JButton("BGM Setting");
             JButton quitButton = new JButton("Quit");
 
             styleBtn(offerHelpButton);
+            styleBtn(bgmSettingButton);
             styleBtn(quitButton);
 
             controlPanel.add(offerHelpButton);
+            controlPanel.add(bgmSettingButton);
             controlPanel.add(quitButton);
 
             offerHelpButton.addActionListener(e -> {
                 this.musicPlayer.playSoundEffectPressingButton();
                 this.sendMessage("Available help");
+            });
+            bgmSettingButton.addActionListener(e -> {
+                this.userInterfaceFrame.shiftPlayStatus();
             });
             quitButton.addActionListener(e -> quitGame());
 
