@@ -1,5 +1,6 @@
 package frame;
 
+import logic.AnswerSolver;
 import logic.LogicController;
 import record.Move;
 import record.User;
@@ -17,7 +18,7 @@ import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.LinkedList;
-import java.util.concurrent.CountDownLatch;
+import java.util.ListIterator;
 import java.util.Queue;
 
 import static frame.Style.styleBtn;
@@ -54,6 +55,12 @@ public class GameFrame extends JFrame {
     private boolean isSaved = false;
     private UserInterfaceFrame userInterfaceFrame;
     private volatile boolean isRunning = true;
+    private boolean isMoved = true;
+    private java.util.List<Direction> solution;
+    private java.util.List<Integer> x_selected;
+    private java.util.List<Integer> y_selected;
+    private java.util.List<Integer> type_selected;
+    ListIterator<Direction> iter;
 
     /**
      * 这是第一类的有参构造器，作用是新建一个游戏界面，在选择新开始游戏时使用
@@ -255,12 +262,12 @@ public class GameFrame extends JFrame {
                     block.setSize(block.GRIDSIZE, block.GRIDSIZE);
                     mapInitializer[i][j] = 0;
                 } else if (mapInitializer[i][j] == 2) {
-                    block = new Block("/klotiskiDaBin.jpg", i, j,2, this);
+                    block = new Block("/klotiskiGuanYu.jpg", i, j,2, this);
                     block.setSize(block.GRIDSIZE * 2, block.GRIDSIZE);
                     mapInitializer[i][j] = 0;
                     mapInitializer[i][j + 1] = 0;
                 } else if (mapInitializer[i][j] == 3) {
-                    block = new Block("/klotiskiGuanYu.jpg", i, j,3, this);
+                    block = new Block("/klotiskiDaBin.jpg", i, j,3, this);
                     block.setSize(block.GRIDSIZE, block.GRIDSIZE * 2);
                     mapInitializer[i][j] = 0;
                     mapInitializer[i + 1][j] = 0;
@@ -271,6 +278,10 @@ public class GameFrame extends JFrame {
                     mapInitializer[i + 1][j] = 0;
                     mapInitializer[i][j + 1] = 0;
                     mapInitializer[i + 1][j + 1] = 0;
+                }else if (mapInitializer[i][j] == -1){
+                    block = new Block("/mountain.jpg", i, j,-1, this);
+                    block.setSize(block.GRIDSIZE, block.GRIDSIZE);
+                    mapInitializer[i][j] = 0;
                 }
                 if (block != null) {
                     klotskiBoardPanel.add(block);
@@ -326,6 +337,10 @@ public class GameFrame extends JFrame {
                     map[i + 1][j] = 0;
                     map[i][j + 1] = 0;
                     map[i + 1][j + 1] = 0;
+                }else if (map[i][j] == -1){
+                    block = new Block("/mountain.jpg", i, j,-1, this);
+                    block.setSize(block.GRIDSIZE, block.GRIDSIZE);
+                    map[i][j] = 0;
                 }
                 if (block != null) {
                     klotskiBoardPanel.add(block);
@@ -375,6 +390,18 @@ public class GameFrame extends JFrame {
         int seconds = timeElapsed % 60;
         this.logicController.setTime(minutes * 60 + seconds);
         timerLabel.setText(String.format("Time: %02d:%02d", minutes, seconds));
+        if(timeElapsed >= 600){
+            JOptionPane.showMessageDialog(this, "Time out! Game over.");
+            int choice = JOptionPane.showConfirmDialog(this,"Time out! Game over.");
+            if(choice == JOptionPane.YES_OPTION || choice == JOptionPane.NO_OPTION || choice == JOptionPane.CLOSED_OPTION){
+                stopTimer();
+                this.isRunning = false;
+                this.logicController.setTime(0);
+                this.logicController.setStep(0);
+                this.dispose();
+            }
+
+        }
     }
 
     /**
@@ -639,8 +666,38 @@ public class GameFrame extends JFrame {
      * 这是搜索算法的接口，后面具体的搜索代码可以在这里接入总体
      */
     private void showAnswer() {
-        System.out.println("Show Answer button clicked.");
+        if(this.selectedBlock != null){
+            this.selectedBlock.setSelected(false);
+            this.selectedBlock = blocks.getLast();
+            repaint();
+        }
+        if(solution == null || isMoved){
+            AnswerSolver answerSolver = new AnswerSolver(logicController);
+            java.util.List<Direction> solution = answerSolver.getFinalSolution();
+            java.util.List<Integer> x_selected = answerSolver.getX_selected();
+            java.util.List<Integer> y_selected = answerSolver.getY_selected();
+            java.util.List<Integer> type_selected = answerSolver.getType_selected();
+            if(solution == null){
+                JOptionPane.showMessageDialog(this, "No solution found!");
+                return;
+            }else{
+                this.solution = solution;
+                this.x_selected = x_selected;
+                this.y_selected = y_selected;
+                this.type_selected = type_selected;
+                isMoved = false;
+                iter = solution.listIterator();
+                Direction answerDirection = iter.next();
+                int answerIndex = iter.previousIndex();
+                doMove(x_selected.get(answerIndex), y_selected.get(answerIndex), type_selected.get(answerIndex), answerDirection, false);
+            }
+        }else if(!isMoved && solution != null){
+            Direction answerDirection = iter.next();
+            int answerIndex = iter.previousIndex();
+            doMove(x_selected.get(answerIndex), y_selected.get(answerIndex), type_selected.get(answerIndex), answerDirection, false);
+        }
     }
+
 
     /**
      * 这是退出游戏的具体实现
@@ -718,6 +775,7 @@ public class GameFrame extends JFrame {
         int col = selectedBlock.getCol();
         int[][] map = logicController.getMap();
         if (this.logicController.getMap()[row][col] == 1 && Move.validateMove(1, row + direction.getRow(), col + direction.getCol(), direction, this.logicController)) {
+            this.isMoved = true;
             map[row][col] = 0;
             map[row + direction.getRow()][col + direction.getCol()] = 1;
             blockRepaint(row, col, row + direction.getRow(), col + direction.getCol(), selectedBlock);
@@ -725,6 +783,7 @@ public class GameFrame extends JFrame {
                 afterMove(direction);
             }
         } else if (map[row][col] == 2 && Move.validateMove(2, row + direction.getRow(), col + direction.getCol(), direction, this.logicController)) {
+            this.isMoved = true;
             map[row][col] = 0;
             map[row][col + 1] = 0;
             map[row + direction.getRow()][col + direction.getCol()] = 2;
@@ -734,6 +793,7 @@ public class GameFrame extends JFrame {
                 afterMove(direction);
             }
         } else if (map[row][col] == 3 && Move.validateMove(3, row + direction.getRow(), col + direction.getCol(), direction, this.logicController)) {
+            this.isMoved = true;
             map[row][col] = 0;
             map[row + 1][col] = 0;
             map[row + direction.getRow()][col + direction.getCol()] = 3;
@@ -743,6 +803,7 @@ public class GameFrame extends JFrame {
                 afterMove(direction);
             }
         } else if (map[row][col] == 4 && Move.validateMove(4, row + direction.getRow(), col + direction.getCol(), direction, this.logicController)) {
+            this.isMoved = true;
             map[row][col] = 0;
             map[row][col + 1] = 0;
             map[row + 1][col] = 0;
@@ -770,6 +831,56 @@ public class GameFrame extends JFrame {
         this.selectedBlock = this.blocks.getLast();
         repaint();
     }
+
+        private void doMove(int x, int y, int type, Direction direction, boolean isWithdraw) {
+            try{this.selectedBlock = getBlock(x, y, type);
+                int row = selectedBlock.getRow();
+                int col = selectedBlock.getCol();
+                int[][] map = logicController.getMap();
+                if (this.logicController.getMap()[row][col] == 1 && Move.validateMove(1, row + direction.getRow(), col + direction.getCol(), direction, this.logicController)) {
+                    map[row][col] = 0;
+                    map[row + direction.getRow()][col + direction.getCol()] = 1;
+                    blockRepaint(row, col, row + direction.getRow(), col + direction.getCol(), selectedBlock);
+                    if (!isWithdraw) {
+                        afterMove(direction);
+                    }
+                } else if (map[row][col] == 2 && Move.validateMove(2, row + direction.getRow(), col + direction.getCol(), direction, this.logicController)) {
+                    map[row][col] = 0;
+                    map[row][col + 1] = 0;
+                    map[row + direction.getRow()][col + direction.getCol()] = 2;
+                    map[row + direction.getRow()][col + direction.getCol() + 1] = 2;
+                    blockRepaint(row, col, row + direction.getRow(), col + direction.getCol(), selectedBlock);
+                    if (!isWithdraw) {
+                        afterMove(direction);
+                    }
+                } else if (map[row][col] == 3 && Move.validateMove(3, row + direction.getRow(), col + direction.getCol(), direction, this.logicController)) {
+                    map[row][col] = 0;
+                    map[row + 1][col] = 0;
+                    map[row + direction.getRow()][col + direction.getCol()] = 3;
+                    map[row + direction.getRow() + 1][col + direction.getCol()] = 3;
+                    blockRepaint(row, col, row + direction.getRow(), col + direction.getCol(), selectedBlock);
+                    if (!isWithdraw) {
+                        afterMove(direction);
+                    }
+                } else if (map[row][col] == 4 && Move.validateMove(4, row + direction.getRow(), col + direction.getCol(), direction, this.logicController)) {
+                    map[row][col] = 0;
+                    map[row][col + 1] = 0;
+                    map[row + 1][col] = 0;
+                    map[row + 1][col + 1] = 0;
+                    map[row + direction.getRow()][col + direction.getCol()] = 4;
+                    map[row + direction.getRow()][col + direction.getCol() + 1] = 4;
+                    map[row + direction.getRow() + 1][col + direction.getCol()] = 4;
+                    map[row + direction.getRow() + 1][col + direction.getCol() + 1] = 4;
+                    blockRepaint(row, col, row + direction.getRow(), col + direction.getCol(), selectedBlock);
+                    if (!isWithdraw) {
+                        afterMove(direction);
+                    }
+                }
+            } catch (Exception e) {
+                e.getStackTrace();
+                JOptionPane.showMessageDialog(this, "Warning: Invalid move!");
+            }
+        }
 
     /**
      * 这个方法用于重绘方块，主要是为了实现移动的效果
@@ -809,24 +920,23 @@ public class GameFrame extends JFrame {
      * 这是一个用以生成结束的对话框
      */
     private void showVictoryDialog() {
-        Object[] options = {"继续游戏", "退出游戏"};
-
-        int minutes = timeElapsed / 60;
-        int seconds = timeElapsed % 60;
-        String timeText = String.format("%02d:%02d", minutes, seconds);
-
+        Object[] options = {"Continue", "Exit"};
+        String timeText = null;
+        if(timeElapsed != 0){
+            int minutes = timeElapsed / 60;
+            int seconds = timeElapsed % 60;
+            timeText = String.format("%02d:%02d", minutes, seconds);
+        }
         int choice = JOptionPane.showOptionDialog(
                 this,
-                "恭喜！您以 " + stepCount + " 步、" + timeText + " 的成绩获胜！",
-                "游戏胜利！",
+                "Congratulations! You solved this problem within " + stepCount + " steps" + (timeText == null ? "" :  (" and "+ timeText)),
+                "Victory",
                 JOptionPane.YES_NO_OPTION,
                 JOptionPane.QUESTION_MESSAGE,
                 null,
                 options,
                 options[0]
         );
-
-        // 处理用户选择
         if (choice == JOptionPane.YES_OPTION) {
         } else {
             stopTimer();

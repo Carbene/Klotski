@@ -170,7 +170,7 @@ public class Block extends JComponent {
      * 实现方块的选中
      */
     private void doSelect() {
-        if(owner.isSpectator){
+        if(owner.isSpectator || this.type == -1){
             return;
         }
         if(this.owner.getSelectedBlock() != null && this.owner.getSelectedBlock() != this) {

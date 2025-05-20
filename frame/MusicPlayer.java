@@ -14,6 +14,7 @@ public class MusicPlayer {
     private static final String SOUNDEFFECTPRESSINGBUTTONPATH = "/pressingButton.wav";
     private static final String SOUNDEFFECTMOVINGBLOCKPATH = "/movingBlock.wav";
     private boolean isBGMEnabled = true;
+    private boolean isSoundEffectEnabled = true;
 
     /**
      * 无参构造器，创建音乐播放器对象

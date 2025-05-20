@@ -11,7 +11,7 @@ public enum Level {
                     {3, 2, 2, 3},
                     {3, 1, 1, 3},
                     {1, 0, 0, 1}
-            },1,"src/frame/theme/1.jpg"
+            },1,"/level1.jpg"
     ),
     LEVEL2(
             new int[][]{
@@ -20,7 +20,7 @@ public enum Level {
                     {1, 2, 2, 1},
                     {3, 1, 1, 3},
                     {3, 0, 0, 3}
-    },2,"src/frame/theme/2.jpg"),
+    },2,"/level2.jpg"),
     LEVEL3(
             new int[][]{
                     {0, 4, 4, 0},
@@ -28,7 +28,7 @@ public enum Level {
                     {3, 3, 3, 3},
                     {1, 3, 3, 1},
                     {2, 2, 1, 1}
-    },3,"src/frame/theme/3.jpg"),
+    },3,"/level3.jpg"),
     LEVEL4(
             new int[][]{
                     {3, 4, 4, 3},
@@ -36,15 +36,15 @@ public enum Level {
                     {1, 1, 1, 1},
                     {3, 2, 2, 3},
                     {3, 0, 0, 3}
-    },4,"src/frame/theme/4.jpg"),
+    },4,"/level4.jpg"),
     LEVEL5(
             new int[][]{
-                    {1, 4, 4, 1},
-                    {3, 4, 4, 3},
-                    {3, 0, 0, 3},
-                    {3, 0, 0, 3},
-                    {3, 0, 0, 3}
-    },5,"src/frame/theme/5.jpg");
+                    {1, 4, 4, 0},
+                    {3, 4, 4, 0},
+                    {3, 2, 2, 0},
+                    {3, 1, 1, 0},
+                    {3, 0, 0, -1}
+    },5,"/level5.jpg");
 
     private final int[][] MAP;
     private final int CODE;
@@ -101,5 +101,9 @@ public enum Level {
             }
         }
         return null;
+    }
+
+    public String getPREVIEW_PIC_PATH() {
+        return PREVIEW_PIC_PATH;
     }
 }
