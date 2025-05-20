@@ -39,9 +39,9 @@ public class GameFrame extends JFrame {
 
     private JLabel stepsLabel;
     private JLabel timerLabel;
+    private JLabel userLabel;
     private int stepCount = 0;
     private int timeElapsed = 0;
-    private int imagePathFollowing = 0;
 
     private JPanel klotskiBoardPanel;
     private BackgroundPanel backgroundPanel;
@@ -113,6 +113,7 @@ public class GameFrame extends JFrame {
         this.timeElapsed = logicController.getTime();
         this.isSpectator = false;
         this.userInterfaceFrame = userInterfaceFrame;
+        this.messages = new LinkedList<>();
 
         setTitle("Klotski Game");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -321,12 +322,12 @@ public class GameFrame extends JFrame {
                     block.setSize(block.GRIDSIZE, block.GRIDSIZE);
                     map[i][j] = 0;
                 } else if (map[i][j] == 2) {
-                    block = new Block("/klotiskiDaBin.jpg", i, j,2, this);
+                    block = new Block("/klotiskiGuanYu.jpg", i, j,2, this);
                     block.setSize(block.GRIDSIZE * 2, block.GRIDSIZE);
                     map[i][j] = 0;
                     map[i][j + 1] = 0;
                 } else if (map[i][j] == 3) {
-                    block = new Block("/klotiskiGuanYu.jpg", i, j,3, this);
+                    block = new Block("/klotiskiDaBin.jpg", i, j,3, this);
                     block.setSize(block.GRIDSIZE, block.GRIDSIZE * 2);
                     map[i][j] = 0;
                     map[i + 1][j] = 0;
@@ -446,6 +447,10 @@ public class GameFrame extends JFrame {
             infoPanel.add(timerLabel);
             startTimer();
         }
+
+        this.userLabel = new JLabel("User: " + user.getId());
+        Style.styleLabel(userLabel);
+        infoPanel.add(userLabel);
 
         return infoPanel;
     }

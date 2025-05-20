@@ -234,13 +234,12 @@ public class LogicController implements Serializable {
                         JOptionPane.showMessageDialog(null, "This is not your save file", "Error", JOptionPane.ERROR_MESSAGE);
                         return null;
                     }
-                } else {
-                    System.err.println("This is not a save file.");
-                    JOptionPane.showMessageDialog(null, "This is not a save file", "Error", JOptionPane.ERROR_MESSAGE);
-                    return null;
                 }
             }catch(Exception e){
                 e.printStackTrace();
+                System.err.println("This is not a save file.");
+                JOptionPane.showMessageDialog(null, "This is not a save file", "Error", JOptionPane.ERROR_MESSAGE);
+                return null;
             }
         }
         return null;
