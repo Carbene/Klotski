@@ -20,8 +20,8 @@ public class LogicController implements Serializable {
     private int time;
     private boolean isTimed;
     private final Stack<Move> moves;
-    private final static int HEIGHT = 4;
-    private final static int WIDTH = 5;
+    private final static int HEIGHT = 5;
+    private final static int WIDTH = 4;
     private String saveFileName;
     private final boolean isSpectator;
 
@@ -65,7 +65,7 @@ public class LogicController implements Serializable {
      * @return 是否胜利
      */
     public boolean isGameOver(int stepCount) {
-        if(map[1][3] == 4 && map[2][3] == 4 && map[1][4] == 4 && map[2][4] == 4) {
+        if(map[3][1] == 4 && map[3][2] == 4 && map[4][1] == 4 && map[4][2] == 4) {
             if(user.getUserSymbol()==1){
                 if(level!=null&&user!=null){
                     if(User.getBestRecord(user,level.getCODE(),0) > this.step) {

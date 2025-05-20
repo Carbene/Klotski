@@ -53,7 +53,7 @@ public class GameFrame extends JFrame {
     private MusicPlayer musicPlayer;
     private boolean isSaved = false;
     private UserInterfaceFrame userInterfaceFrame;
-    private final CountDownLatch latch = new CountDownLatch(1);
+    private volatile boolean isRunning = true;
 
     /**
      * 这是第一类的有参构造器，作用是新建一个游戏界面，在选择新开始游戏时使用
@@ -141,7 +141,7 @@ public class GameFrame extends JFrame {
                 this.in = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
                 this.out = new PrintWriter(socket.getOutputStream(),true);
                 String line;
-                while ((line = in.readLine()) != null) {
+                while (isRunning && (line = in.readLine()) != null) {
                     System.out.println(line);
                     String[] input = line.split(" ");
                     if(input[0].equals("Map")){
@@ -169,6 +169,7 @@ public class GameFrame extends JFrame {
                         JOptionPane.showMessageDialog(this, "Now you have one move chance.");
                     }
                 }
+
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -182,7 +183,7 @@ public class GameFrame extends JFrame {
         new Thread(() -> {
             try {
                 this.serverSocket = new ServerSocket(8080);
-                while(true){
+                while(isRunning){
                     this.clientSocket = serverSocket.accept();
                     if(this.clientSocket != null){
                         this.in = new BufferedReader(new InputStreamReader(this.clientSocket.getInputStream(),StandardCharsets.UTF_8));
@@ -197,7 +198,7 @@ public class GameFrame extends JFrame {
                     this.messages.clear();
                 }
                 String line;
-                while((line = in.readLine()) != null){
+                while(isRunning && (line = in.readLine()) != null){
                     System.out.println(line);
                     String[] input = line.split(" ");
                     if (input[0].equals("Move")) {
@@ -572,7 +573,7 @@ public class GameFrame extends JFrame {
         this.klotskiBoardPanel = new JPanel(null);
         this.klotskiBoardPanel.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 2));
         this.klotskiBoardPanel.setBackground(new Color(200, 200, 200, 200));
-        this.klotskiBoardPanel.setPreferredSize(new Dimension(500, 400));
+        this.klotskiBoardPanel.setPreferredSize(new Dimension(480, 600));
         this.klotskiBoardPanel.add(new KeyBindingExample());
         addComponentListener(new ComponentAdapter() {
             @Override
@@ -653,6 +654,20 @@ public class GameFrame extends JFrame {
                 stopTimer();
                 this.dispose();
                 this.userInterfaceFrame.setVisible(true);
+                isRunning = false;
+                try{
+                    if(this.serverSocket != null){
+                        this.serverSocket.close();
+                    }
+                    if(this.clientSocket != null){
+                        this.clientSocket.close();
+                    }
+                    if(this.socket != null){
+                        this.socket.close();
+                    }
+                }catch (Exception e){
+                    e.getStackTrace();
+                }
             } else {
                 return;
             }
@@ -660,6 +675,20 @@ public class GameFrame extends JFrame {
             stopTimer();
             dispose();
             this.userInterfaceFrame.setVisible(true);
+            isRunning = false;
+            try{
+                if(this.serverSocket != null){
+                    this.serverSocket.close();
+                }
+                if(this.clientSocket != null){
+                    this.clientSocket.close();
+                }
+                if(this.socket != null){
+                    this.socket.close();
+                }
+            }catch (Exception e){
+                e.getStackTrace();
+            }
         }
     }
 
@@ -678,21 +707,6 @@ public class GameFrame extends JFrame {
     public void setSelectedBlock(Block selectedBlock) {
         this.selectedBlock = selectedBlock;
     }
-
-    /**
-     * 为游戏面板设置监听器
-     *//*
-    private void setListener() {
-        addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowClosed(WindowEvent e) {
-                stopTimer();
-                this.
-
-            }
-        });
-
-    }*/
 
     /**
      * block移动的具体实现

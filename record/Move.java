@@ -15,8 +15,8 @@ public class Move implements Serializable {
     private int[] coordinateInfo = new int[2];
     private int type;
     private Direction direction;
-    private static final int HEIGHT = 4;
-    private static final int WIDTH = 5;
+    private static final int HEIGHT = 5;
+    private static final int WIDTH = 4;
 
     /**
      * 这是一个有参构造器，记录移动

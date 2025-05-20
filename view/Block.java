@@ -20,7 +20,7 @@ public class Block extends JComponent {
     private int col;
     private boolean isSelected;
     private GameFrame owner;
-    public static final int GRIDSIZE = 100;
+    public static final int GRIDSIZE = 120;
     private int type;
 
     /**
