@@ -365,7 +365,6 @@ public class GameFrame extends JFrame {
         if (gameTimer != null && gameTimer.isRunning()) {
             gameTimer.stop();
         }
-        timeElapsed = 0;
         updateTimerLabel();
         gameTimer = new Timer(1000, e -> {
             timeElapsed++;
