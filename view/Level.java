@@ -6,40 +6,45 @@ package view;
 public enum Level {
     LEVEL1(
             new int[][]{
-                    {2, 2, 2, 2, 1},
-                    {4, 4, 3, 1, 0},
-                    {4, 4, 3, 1, 0},
-                    {2, 2, 2, 2, 1}
-            },1,"src/frame/theme/1.jpg"
+                    {3, 4, 4, 3},
+                    {3, 4, 4, 3},
+                    {3, 2, 2, 3},
+                    {3, 1, 1, 3},
+                    {1, 0, 0, 1}
+            },1,"/level1.jpg"
     ),
     LEVEL2(
             new int[][]{
-                    {2, 2, 1, 2, 2},
-                    {4, 4, 3, 1, 0},
-                    {4, 4, 3, 1, 0},
-                    {2, 2, 1, 2, 2}
-    },2,"src/frame/theme/2.jpg"),
+                    {3, 4, 4, 3},
+                    {3, 4, 4, 3},
+                    {1, 2, 2, 1},
+                    {3, 1, 1, 3},
+                    {3, 0, 0, 3}
+    },2,"/level2.jpg"),
     LEVEL3(
             new int[][]{
-                    {0, 2, 2, 1, 1},
-                    {4, 4, 2, 2, 1},
-                    {4, 4, 2, 2, 3},
-                    {0, 2, 2, 1, 3}
-    },3,"src/frame/theme/3.jpg"),
+                    {0, 4, 4, 0},
+                    {3, 4, 4, 3},
+                    {3, 3, 3, 3},
+                    {1, 3, 3, 1},
+                    {2, 2, 1, 1}
+    },3,"/level3.jpg"),
     LEVEL4(
             new int[][]{
-                    {2, 2, 1, 2, 2},
-                    {4, 4, 1, 3, 0},
-                    {4, 4, 1, 3, 0},
-                    {2, 2, 1, 2, 2}
-    },4,"src/frame/theme/4.jpg"),
+                    {3, 4, 4, 3},
+                    {3, 4, 4, 3},
+                    {1, 1, 1, 1},
+                    {3, 2, 2, 3},
+                    {3, 0, 0, 3}
+    },4,"/level4.jpg"),
     LEVEL5(
             new int[][]{
-                    {1, 2, 2, 2, 2},
-                    {4, 4, 3, 1, 0},
-                    {4, 4, 3, 1, 0},
-                    {1, 2, 2, 2, 2}
-    },5,"src/frame/theme/5.jpg");
+                    {1, 4, 4, 0},
+                    {3, 4, 4, 0},
+                    {3, 2, 2, 0},
+                    {3, 1, 1, 0},
+                    {3, 0, 0, -1}
+    },5,"/level5.jpg");
 
     private final int[][] MAP;
     private final int CODE;
@@ -67,7 +72,7 @@ public enum Level {
 
     /**
      * 获得地图的宽度
-     * @return 5
+     * @return 4
      */
     public int getWidth() {
         return MAP[0].length;
@@ -75,7 +80,7 @@ public enum Level {
 
     /**
      * 获得地图的高度
-     * @return 4
+     * @return 5
      */
     public int getHeight() {
         return MAP.length;
@@ -87,5 +92,18 @@ public enum Level {
      */
     public int getCODE() {
         return CODE;
+    }
+
+    public static Level getLevel(int CODE) {
+        for (Level level : Level.values()) {
+            if (level.getCODE() == CODE) {
+                return level;
+            }
+        }
+        return null;
+    }
+
+    public String getPREVIEW_PIC_PATH() {
+        return PREVIEW_PIC_PATH;
     }
 }

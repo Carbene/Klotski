@@ -9,22 +9,24 @@ package view;
  * 枚举常量，定义移动的方向
  */
 public enum Direction {
-    LEFT(0, -1),
-    UP(-1, 0),
-    RIGHT(0, 1),
-    DOWN(1, 0);
+    LEFT(0, -1, 0),
+    UP(-1, 0, 1),
+    RIGHT(0, 1, 2),
+    DOWN(1, 0, 3);
 
     private final int row;
     private final int col;
+    private final int code;
 
     /**
      * 一个私有构造器
      * @param row 行
      * @param col 列
      */
-    private Direction(int row, int col) {
+    private Direction(int row, int col, int code) {
         this.row = row;
         this.col = col;
+        this.code = code;
     }
 
     /**
@@ -66,6 +68,19 @@ public enum Direction {
         }
 
 
+    }
+
+    public static Direction getDirection(int code) {
+        for (Direction direction : Direction.values()) {
+            if (direction.code == code) {
+                return direction;
+            }
+        }
+        return null;
+    }
+
+    public int getCode() {
+        return this.code;
     }
 
 }

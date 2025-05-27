@@ -20,8 +20,10 @@ public class LogicController implements Serializable {
     private int time;
     private boolean isTimed;
     private final Stack<Move> moves;
-    private final static int HEIGHT = 4;
-    private final static int WIDTH = 5;
+    private final static int HEIGHT = 5;
+    private final static int WIDTH = 4;
+    private String saveFileName;
+    private final boolean isSpectator;
 
     /**
      * 有参构造器，构造一个新的逻辑
@@ -29,15 +31,15 @@ public class LogicController implements Serializable {
      * @param user 当前玩家
      * @param isTimed 当前模式
      */
-    public LogicController(Level level,User user,boolean isTimed) {
+    public LogicController(Level level,User user,boolean isTimed,boolean isSpectator) {
         this.map = LogicController.copyMap(level);
         this.user = user;
         this.moves = new Stack<>();
         this.isTimed = isTimed;
         this.level = level;
+        this.saveFileName = null;
+        this.isSpectator = isSpectator;
     }
-
-
 
     /**
      * 获取当前矩阵记录下的位置信息，占位信息
@@ -63,13 +65,13 @@ public class LogicController implements Serializable {
      * @return 是否胜利
      */
     public boolean isGameOver(int stepCount) {
-        if(map[1][3] == 4 && map[2][3] == 4 && map[1][4] == 4 && map[2][4] == 4) {
+        if(map[3][1] == 4 && map[3][2] == 4 && map[4][1] == 4 && map[4][2] == 4) {
             if(user.getUserSymbol()==1){
                 if(level!=null&&user!=null){
-                    if(User.getBestRecord(user,level.getCODE(),0) > this.step) {
+                    if(User.getBestRecord(user,level.getCODE(),0) > this.step || User.getBestRecord(user,level.getCODE(),0) == 0) {
                         User.setBestRecord(level,user,0,step);
                     }
-                    if(User.getBestRecord(user,level.getCODE(),1) > this.time) {
+                    if(User.getBestRecord(user,level.getCODE(),1) > this.time || User.getBestRecord(user,level.getCODE(),1) == 0) {
                         User.setBestRecord(level,user,1,time);
                     }
                 }
@@ -143,11 +145,11 @@ public class LogicController implements Serializable {
 
     /**
      * 记录移动信息
-     * @param selectedBoxComponent 被移动的板块
+     * @param selectedBlock 被移动的板块
      * @param direction 方向
      */
-    public void record(BoxComponent selectedBoxComponent, Direction direction) {
-        moves.push(new Move(selectedBoxComponent, direction));
+    public void record(Block selectedBlock, Direction direction) {
+        moves.push(new Move(selectedBlock, direction));
     }
 
     /**
@@ -166,25 +168,39 @@ public class LogicController implements Serializable {
      */
     public static boolean saveGame(LogicController controller,User user) {
         if(!user.getId().equals("Visitor")) {
-            JFileChooser fileChooser = new JFileChooser();
-            fileChooser.setDialogTitle("Find your directory to save");
-            fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-            int result = fileChooser.showSaveDialog(null);
-            if (result == JFileChooser.CANCEL_OPTION) {
-                File file = fileChooser.getSelectedFile();
+            if(controller.saveFileName == null) {
+                JFileChooser fileChooser = new JFileChooser();
+                fileChooser.setDialogTitle("Find your directory to save");
+                fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+                int result = fileChooser.showSaveDialog(null);
+                if (result == JFileChooser.CANCEL_OPTION) {
+                    return false;
+                }
+                String fileName = fileChooser.getSelectedFile() + ".save";
+                try{
+                    controller.saveFileName = fileName;
+                    FileOutputStream fileOut = new FileOutputStream(fileName);
+                    ObjectOutputStream objectOut = new ObjectOutputStream(fileOut);
+                    objectOut.writeObject(controller);
+                    objectOut.close();
+                    fileOut.close();
+                    return true;
+                } catch (Exception e) {
+                    e.getStackTrace();
+                }
+            }else{
+                try{
+                    FileOutputStream fileOut = new FileOutputStream(controller.saveFileName);
+                    ObjectOutputStream objectOut = new ObjectOutputStream(fileOut);
+                    objectOut.writeObject(controller);
+                    objectOut.close();
+                    fileOut.close();
+                    return true;
+                } catch (Exception e) {
+                    e.getStackTrace();
+                }
             }
-            String filePath = fileChooser.getSelectedFile().getAbsolutePath();
-            String fileName = System.currentTimeMillis() + ".save";
-            try{
-                FileOutputStream fileOut = new FileOutputStream(filePath+ File.separator+fileName);
-                ObjectOutputStream objectOut = new ObjectOutputStream(fileOut);
-                objectOut.writeObject(controller);
-                objectOut.close();
-                fileOut.close();
-                return true;
-            } catch (Exception e) {
-                e.getStackTrace();
-            }
+
         }else{
             JOptionPane.showMessageDialog(null, "Please login to save your game", "Error", JOptionPane.ERROR_MESSAGE);
         }
@@ -218,16 +234,41 @@ public class LogicController implements Serializable {
                         JOptionPane.showMessageDialog(null, "This is not your save file", "Error", JOptionPane.ERROR_MESSAGE);
                         return null;
                     }
-                } else {
-                    System.err.println("This is not a save file.");
-                    JOptionPane.showMessageDialog(null, "This is not a save file", "Error", JOptionPane.ERROR_MESSAGE);
-                    return null;
                 }
             }catch(Exception e){
                 e.printStackTrace();
+                System.err.println("This is not a save file.");
+                JOptionPane.showMessageDialog(null, "This is not a save file", "Error", JOptionPane.ERROR_MESSAGE);
+                return null;
             }
         }
         return null;
+    }
+
+    public boolean getIsSpectator() {
+        return isSpectator;
+    }
+
+    @Override
+    public String toString(){
+        return "Map "+ level.getCODE();
+    }
+
+    public void changeMap(int[][] map) {
+        this.map = map;
+    }
+    /**
+     * 复制map
+     */
+    public int[][] deepCopyMap() {
+        if (this.map == null) return null;
+
+        int[][] copy = new int[this.map.length][];
+        for (int i = 0; i < this.map.length; i++) {
+            copy[i] = new int[this.map[i].length];
+            System.arraycopy(this.map[i], 0, copy[i], 0, this.map[i].length);
+        }
+        return copy;
     }
 
 }

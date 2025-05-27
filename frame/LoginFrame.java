@@ -77,6 +77,8 @@ public class LoginFrame extends JFrame {
         UserInterfaceFrame userInterfaceFrame = new UserInterfaceFrame(this,currentUser);
         userInterfaceFrame.setVisible(true);
         this.setVisible(false);
+        this.nameField.setText("");
+        this.passwordField.setText("");
     }
 
     /**
@@ -169,16 +171,13 @@ public class LoginFrame extends JFrame {
             String username = nameField.getText();
             String password = new String(passwordField.getPassword());
             ArrayList<User> users = User.deserializeList();
-            if(users == null || users.isEmpty() || username.isEmpty() || password.isEmpty()) {
-                JDialog dialog = new JDialog();
-                dialog.setTitle("Error");
-                dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-                dialog.setSize(300, 200);
-                dialog.setLocationRelativeTo(this);
-                JLabel errorLabel = new JLabel("No user data found. Please register first.");
-                errorLabel.setHorizontalAlignment(SwingConstants.CENTER);
-                dialog.add(errorLabel);
-                dialog.setVisible(true);
+            if(users.isEmpty() || username.isEmpty() || password.isEmpty()) {
+                if(users.isEmpty()) {
+                    JOptionPane.showMessageDialog(LoginFrame.this, "No available user, please register first.", "Error", JOptionPane.ERROR_MESSAGE);
+                }else{
+                    JOptionPane.showMessageDialog(LoginFrame.this, "Please input username or password.", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+
             }else{
                 for (User user : users) {
                     if (user.getId().equals(username) && user.getPassword().equals(password)) {
@@ -187,6 +186,8 @@ public class LoginFrame extends JFrame {
                         return;
                     }
                 }
+                JOptionPane.showMessageDialog(LoginFrame.this, "No available user, please register first or check your username and password.", "Error", JOptionPane.ERROR_MESSAGE);
+
             }
         }
     }

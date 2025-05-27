@@ -7,17 +7,21 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
+import static frame.Style.styleBtn;
+import static view.Level.getLevel;
+
 /**
  * 这是难度选择的用户界面，由用户选择界面唤起
  */
 public class LevelSelectionFrame extends JDialog {
     private String selectedLevel;
-    private String[] levels = {"1", "2", "3", "4","5"};
+    private String[] levels;
     private JLabel previewLabel;
     private JLabel achievementStepsLabel;
     private JLabel achivementTimeLabel;
     private UserInterfaceFrame userInterfaceFrame;
     private User user;
+    private JLabel previewImageLabel;
 
     /**
      * 一个有参构造器，初始化难度选择界面
@@ -28,7 +32,11 @@ public class LevelSelectionFrame extends JDialog {
     public LevelSelectionFrame(Frame owner,User user) {
         super(owner, "Select Level", true);
         this.user = user;
-        setSize(500, 400);
+        levels = new String[Level.values().length];
+        for(Level level : Level.values()) {
+            levels[level.getCODE() - 1] = String.valueOf(level.getCODE());
+        }
+        setSize(500, 600);
         setLocationRelativeTo(owner);
         setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
@@ -41,14 +49,28 @@ public class LevelSelectionFrame extends JDialog {
      * 更新视图方法，在难度选择后进行对应的渲染
      */
     private void updatePreview() {
-        previewLabel.setText(this.selectedLevel);
-        if(this.user.getId() != "Visitor") {
-            achievementStepsLabel.setText(User.getBestRecord(user,Integer.parseInt(selectedLevel),0) == 0 ?"Please first play the game" : "Best: " + User.getBestRecord(user,Integer.parseInt(selectedLevel),0) + " Steps");
-            achivementTimeLabel.setText(User.getBestRecord(user,Integer.parseInt(selectedLevel),1) == 0 ?"Please first play the game" : "Best: " + User.getBestRecord(user,Integer.parseInt(selectedLevel),1) + " Seconds");
-        }else{
-            achievementStepsLabel.setText("Please login to see your best record");
-            achivementTimeLabel.setText("Please login to see your best record");
+        if(this.selectedLevel != null) {
+            previewLabel.setText(this.selectedLevel);
+            if(!this.user.getId().equals("Visitor")) {
+                achievementStepsLabel.setText(User.getBestRecord(user,Integer.parseInt(selectedLevel),0) == 0 ?"Please first play the game" : "Best: " + User.getBestRecord(user,Integer.parseInt(selectedLevel),0) + " Steps");
+                achivementTimeLabel.setText(User.getBestRecord(user,Integer.parseInt(selectedLevel),1) == 0 ?"Please first play the game" : "Best: " + User.getBestRecord(user,Integer.parseInt(selectedLevel),1) + " Seconds");
+            }else{
+                achievementStepsLabel.setText("Please login to see your best record");
+                achivementTimeLabel.setText("Please login to see your best record");
+            }
+            String imagePath = getLevel(Integer.parseInt(this.selectedLevel)).getPREVIEW_PIC_PATH();
+            java.net.URL imgURL = getClass().getResource(imagePath);
+            if (imgURL != null) {
+                ImageIcon icon = new ImageIcon(imgURL);
+                Image img = icon.getImage().getScaledInstance(200, 250, Image.SCALE_SMOOTH);
+                previewImageLabel.setIcon(new ImageIcon(img));
+                previewImageLabel.setText("");
+            } else {
+                previewImageLabel.setIcon(null);
+                previewImageLabel.setText("No Preview");
+            }
         }
+
     }
 
     /**
@@ -102,6 +124,7 @@ public class LevelSelectionFrame extends JDialog {
         levelListPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
         for (String level : levels) {
             JButton levelButton = new JButton(level);
+            styleBtn(levelButton);
             levelButton.setAlignmentX(Component.CENTER_ALIGNMENT);
             levelButton.setMaximumSize(new Dimension(Integer.MAX_VALUE, levelButton.getPreferredSize().height));
             levelButton.addActionListener(e -> {
@@ -164,17 +187,15 @@ public class LevelSelectionFrame extends JDialog {
         previewLabel.setFont(new Font("Arial", Font.BOLD, 16));
         previewLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        JPanel previewContent = new JPanel();
-        previewContent.setOpaque(false);
-        previewContent.setPreferredSize(new Dimension(200, 150));
-        previewContent.setBorder(BorderFactory.createLineBorder(Color.WHITE));
-        previewContent.add(new JLabel("Level Preview"));
+        previewImageLabel = new JLabel();
+        previewImageLabel.setPreferredSize(new Dimension(200, 250));
+        previewImageLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         previewPanel.add(previewLabel);
         previewPanel.add(Box.createRigidArea(new Dimension(0, 10)));
-        previewPanel.add(previewContent);
+        previewPanel.add(previewImageLabel);
         previewPanel.add(Box.createRigidArea(new Dimension(0, 10)));
-        previewContent.add(Box.createVerticalGlue());
+
 
         return previewPanel;
     }
@@ -228,7 +249,7 @@ public class LevelSelectionFrame extends JDialog {
      */
     private BackgroundPanel getBackgroundPanel(){
 
-        BackgroundPanel background = new BackgroundPanel("src/frame/theme/levelSelectionBackgroundPic.jpg");
+        BackgroundPanel background = new BackgroundPanel("/levelSelectionBackgroundPic.jpg");
         background.setLayout(new BorderLayout(10, 10));
         setContentPane(background);
 

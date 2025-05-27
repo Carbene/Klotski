@@ -13,8 +13,8 @@ public class User implements Serializable {
     private final String id;
     private final String password;
     private int[][] bestRecord;
-    private static final String DIRECTORY = "src/record/userInfo";
-    private int userSymbol=0;
+    private static final String DIRECTORY = "./userInfo";
+    private int userSymbol = 0;
     /**
      * 有参构造器，构造的是正常的用户，并会本地建立副本
      * @param id 用户名
@@ -23,14 +23,9 @@ public class User implements Serializable {
     public User(String id, String password) {
         this.id = id;
         this.password = password;
-        User.serialize(this);
-        this.userSymbol=1;
+        this.userSymbol = 1;
         this.bestRecord = new int[Level.values().length][2];
-        for(int i=0;i<Level.values().length;i++){
-            for(int j=0;j<2;j++){
-                bestRecord[i][j]=Integer.MAX_VALUE;
-            }
-        }
+        User.serialize(this);
     }
 
     /**
@@ -39,8 +34,8 @@ public class User implements Serializable {
     public User(){
         this.id = "Visitor";
         this.password = null;
+        this.userSymbol = 0;
         User.serialize(this);
-        this.userSymbol=0;
 
     }
 
@@ -50,6 +45,9 @@ public class User implements Serializable {
      */
     public static void serialize(User user) {
         try {
+            if(!new File(User.DIRECTORY).exists()) {
+                new File(User.DIRECTORY).mkdirs();
+            }
             FileOutputStream fileOut = new FileOutputStream(User.DIRECTORY+File.separator+user.id);
             ObjectOutputStream out = new ObjectOutputStream(fileOut);
             out.writeObject(user);
@@ -89,7 +87,7 @@ public class User implements Serializable {
                 System.err.println("Object read is not an instance of User: " + filePath);
                 return null;
             }
-        } catch (IOException | ClassNotFoundException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return user;
@@ -155,7 +153,8 @@ public class User implements Serializable {
      * @param achievement 新的成就
      */
     public static void setBestRecord(Level level, User user, int mode, int achievement){
-        user.bestRecord[level.ordinal()][mode] = achievement;
+        user.bestRecord[level.getCODE() - 1][mode] = achievement;
+        User.serialize(user);
     }
 
     /**

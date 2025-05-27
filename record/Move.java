@@ -2,7 +2,7 @@ package record;
 
 import logic.LogicController;
 import view.Direction;
-import view.BoxComponent;
+import view.Block;
 
 import java.io.Serializable;
 
@@ -15,19 +15,19 @@ public class Move implements Serializable {
     private int[] coordinateInfo = new int[2];
     private int type;
     private Direction direction;
-    private static final int HEIGHT = 4;
-    private static final int WIDTH = 5;
+    private static final int HEIGHT = 5;
+    private static final int WIDTH = 4;
 
     /**
      * 这是一个有参构造器，记录移动
-     * @param selectedBoxComponent 被移动的方块
+     * @param selectedBlock 被移动的方块
      * @param direction 移动的方向
      */
-    public Move(BoxComponent selectedBoxComponent, Direction direction) {
+    public Move(Block selectedBlock, Direction direction) {
         this.direction = direction;
-        this.type = selectedBoxComponent.getType();
-        coordinateInfo[0] = selectedBoxComponent.getRow();
-        coordinateInfo[1] = selectedBoxComponent.getCol();
+        this.type = selectedBlock.getType();
+        coordinateInfo[0] = selectedBlock.getRow();
+        coordinateInfo[1] = selectedBlock.getCol();
     }
 
     /**
@@ -112,6 +112,11 @@ public class Move implements Serializable {
      */
     public int[] getCoordinate() {
         return coordinateInfo;
+    }
+
+    @Override
+    public String toString() {
+        return "Move " + coordinateInfo[0] + " " + coordinateInfo[1] + " " + type + " " + direction.getCode();
     }
 
 }

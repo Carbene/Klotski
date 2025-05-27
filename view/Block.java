@@ -10,18 +10,17 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
 
 /**
  * 这是方块的视图类，用于生成具体的板块
  */
-public class BoxComponent extends JComponent {
+public class Block extends JComponent {
     private Image image;
     private int row;
     private int col;
     private boolean isSelected;
     private GameFrame owner;
-    public static final int GRIDSIZE = 100;
+    public static final int GRIDSIZE = 120;
     private int type;
 
     /**
@@ -34,7 +33,7 @@ public class BoxComponent extends JComponent {
      *             TODO: 新的障碍物类（也有bonus)
      * @param gameFrame 归属的游戏框架
      */
-    public BoxComponent(String imagePath, int row, int col, int type,GameFrame gameFrame) {
+    public Block(String imagePath, int row, int col, int type, GameFrame gameFrame) {
         this.image=getImageFromPath(imagePath);
         this.row = row;
         this.col = col;
@@ -44,14 +43,10 @@ public class BoxComponent extends JComponent {
         setOpaque(false);
         this.owner = gameFrame;
         addMouseListener(new MouseAdapter() {
-
             @Override
             public void mouseClicked(MouseEvent e){
-
                 doSelect();
-
             }
-
         });
     }
 
@@ -59,7 +54,7 @@ public class BoxComponent extends JComponent {
      * 构造一个占位的方块，用于选择方块时占位
      * @param gameFrame 归属的框架
      */
-    public BoxComponent(GameFrame gameFrame) {
+    public Block(GameFrame gameFrame) {
         this.image=null;
         this.row = 0;
         this.col = 0;
@@ -128,17 +123,6 @@ public class BoxComponent extends JComponent {
         }
         this.setBorder(border);
         this.setOpaque(true);
-        /*super.paintComponent(g);
-        g.setColor(color);
-        g.fillRect(0, 0, getWidth(), getHeight());
-        Border border;
-        if (isSelected) {
-            border = BorderFactory.createLineBorder(Color.WHITE, 5);
-        } else {
-            border = BorderFactory.createLineBorder(Color.darkGray, 1);
-        }
-        this.setBorder(border);
-        this.setOpaque(true);*/
     }
 
     /**
@@ -186,27 +170,21 @@ public class BoxComponent extends JComponent {
      * 实现方块的选中
      */
     private void doSelect() {
-
-        if(this.owner.getSelectedBox() != null && this.owner.getSelectedBox() != this) {
-
-            this.owner.getSelectedBox().setSelected(false);
-            this.owner.setSelectedBox(this);
-            this.setSelected(true);
-
-        }else if(this.owner.getSelectedBox() == this){
-
-            this.setSelected(false);
-            this.owner.setSelectedBox(this.owner.getBoxes().getLast());
-
-        }else if(this.owner.getSelectedBox() == null){
-
-            this.setSelected(true);
-            this.owner.setSelectedBox(this);
-
+        if(owner.isSpectator || this.type == -1){
+            return;
         }
-
+        if(this.owner.getSelectedBlock() != null && this.owner.getSelectedBlock() != this) {
+            this.owner.getSelectedBlock().setSelected(false);
+            this.owner.setSelectedBlock(this);
+            this.setSelected(true);
+        }else if(this.owner.getSelectedBlock() == this){
+            this.setSelected(false);
+            this.owner.setSelectedBlock(this.owner.getBlocks().getLast());
+        }else if(this.owner.getSelectedBlock() == null){
+            this.setSelected(true);
+            this.owner.setSelectedBlock(this);
+        }
         this.owner.repaint();
-
     }
 
     /**
@@ -216,9 +194,6 @@ public class BoxComponent extends JComponent {
     public int getType() {
         return type;
     }
-
-
-
 
 }
 
