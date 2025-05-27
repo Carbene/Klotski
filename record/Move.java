@@ -8,7 +8,6 @@ import java.io.Serializable;
 
 /**
  * 一个记录工具类，帮助我们记录每一步的移动
- * TODO: 基于这个类进一步提供观战和提示
  */
 public class Move implements Serializable {
 
@@ -114,6 +113,10 @@ public class Move implements Serializable {
         return coordinateInfo;
     }
 
+    /**
+     * 重写的toString方法，用于输出这一移动的记录，便于网络传输
+     * @return 移动记录的字符串表示
+     */
     @Override
     public String toString() {
         return "Move " + coordinateInfo[0] + " " + coordinateInfo[1] + " " + type + " " + direction.getCode();

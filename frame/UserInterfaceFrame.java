@@ -30,7 +30,6 @@ public class UserInterfaceFrame extends JFrame {
     /**
      * 有参构造器，设置用户界面
      * @param loginFrame 上级界面，方便回退
-     * TODO: 也许可以公开loginFrame的方法进行不传入？
      * @param user 全局唯一的用户
      */
     public UserInterfaceFrame(LoginFrame loginFrame, User user) {
@@ -41,13 +40,10 @@ public class UserInterfaceFrame extends JFrame {
         initializeUserInterface();
         getBackgroundPanel();
         shiftPlayStatus();
-
-
     }
 
     /**
      * 切换背景音乐的播放状态，似乎应该是公开的
-     * TODO: 也许应该公开，全局调用？
      */
     public void shiftPlayStatus() {
         bgmEnabled = !bgmEnabled;
@@ -61,7 +57,6 @@ public class UserInterfaceFrame extends JFrame {
     /**
      * 获取退出游戏的按钮
      */
-    //TODO:这里应当加入一个观战按钮
     private void setLogoutButton() {
         JButton logoutButton = new JButton("Log Out");
         styleBtn(logoutButton);
@@ -148,7 +143,6 @@ public class UserInterfaceFrame extends JFrame {
 
     /**
      *设置观战按钮
-     * TODO: 这里应当实现一个观战按钮的功能
      */
     private void setSpectatorButton() {
         JButton spectateBtn = new JButton("Spectate a game");
@@ -169,6 +163,9 @@ public class UserInterfaceFrame extends JFrame {
         });
     }
 
+    /**
+     * 设置查看排行榜的按钮
+     */
     private void setViewRankButton() {
         JButton viewRankButton = new JButton("View the Rank");
         styleBtn(viewRankButton);
@@ -179,6 +176,10 @@ public class UserInterfaceFrame extends JFrame {
         });
     }
 
+    /**
+     * 获取服务器地址的对话框
+     * 这个方法会弹出一个对话框，要求用户输入服务器地址
+     */
     private void getHost() {
 
         JDialog hostDialog = new JDialog(this, "Server host setting", true);
@@ -205,6 +206,9 @@ public class UserInterfaceFrame extends JFrame {
 
     }
 
+    /**
+     * 设置加载旧游戏的按钮
+     */
     private void setLoadGameButton() {
         JButton loadGameButton = new JButton("Load an Old Game");
         styleBtn(loadGameButton);
@@ -214,6 +218,7 @@ public class UserInterfaceFrame extends JFrame {
             this.loadGame();
         });
     }
+
     /**
      * 获得背景音乐调控的按钮
      */
@@ -247,7 +252,6 @@ public class UserInterfaceFrame extends JFrame {
 
     /**
      * 获取当前用户，也许用户应该是全局唯一的
-     * TODO: 优化用户类相关的代码
      * @return 当前用户
      */
     public User getUser() {
@@ -256,7 +260,6 @@ public class UserInterfaceFrame extends JFrame {
 
     /**
      * 传递音乐播放器对象
-     * TODO: 似乎应该是唯一的
      * @return 获得音乐播放器对象
      */
     public MusicPlayer getMusicPlayer() {

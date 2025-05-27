@@ -14,6 +14,11 @@ import static view.Direction.DOWN;
 import static view.Direction.RIGHT;
 import static view.Direction.LEFT;
 
+/**
+ * 这是一个解答器类，使用DFS算法来寻找最优解
+ * 通过深度优先搜索来找到最短路径
+ * 该类会在初始化时自动开始寻找答案
+ */
 public class AnswerSolver {
     private static final int TARGET_ROW = 3;
     private static final int TARGET_COL = 1;
@@ -29,7 +34,8 @@ public class AnswerSolver {
 
 
     /**
-     * 初始化
+     * 有参构造器，接收一个LogicController对象，并开始寻找答案
+     * @param controller 逻辑控制器对象
      */
     public AnswerSolver(LogicController controller) {
         this.controller = deepCopyLogicController(controller);
@@ -127,8 +133,6 @@ public class AnswerSolver {
                 map[TARGET_ROW][TARGET_COL+1] == 4 &&
                 map[TARGET_ROW+1][TARGET_COL+1] == 4;
     }
-
-
 
     /**
      * 用于判断那些方块可以移动
@@ -244,8 +248,8 @@ public class AnswerSolver {
 
     /**
      * 拷贝玩家现在游戏状态
-     * @param orig
-     * @return
+     * @param orig 原始的LogicController对象
+     * @return 深拷贝的LogicController对象
      */
     private static LogicController deepCopyLogicController(LogicController orig) {
         try {
@@ -380,6 +384,10 @@ public class AnswerSolver {
         return copy;
     }
 
+    /**
+     * 获取当前选中的坐标和类型
+     * @return
+     */
     public List<Integer> getX_selected() {
         return x_selected;
     }
