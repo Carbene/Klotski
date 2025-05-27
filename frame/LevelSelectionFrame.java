@@ -27,7 +27,6 @@ public class LevelSelectionFrame extends JDialog {
      * 一个有参构造器，初始化难度选择界面
      * @param owner 上级界面，这里应该具体化为用户界面
      * @param user 当前玩家
-     *TODO: 用户类全局统一公开化？
      */
     public LevelSelectionFrame(Frame owner,User user) {
         super(owner, "Select Level", true);
@@ -76,7 +75,6 @@ public class LevelSelectionFrame extends JDialog {
     /**
      * 开始游戏的方法，传入一个布尔值，决定是否为计时模式
      * @param isTimed 是否为计时模式
-     *TODO: 界面切换逻辑仍然有问题
      */
     private void startGame(boolean isTimed) {
         if (selectedLevel == null) {
@@ -102,7 +100,6 @@ public class LevelSelectionFrame extends JDialog {
      * 获取对应代码的地图枚举常量
      * @param code 代码
      * @return 枚举常量
-     * TODO: 其实这里本来的用途是为Level赋予了中文名称，但是似乎应为UTF的问题，和英文一同使用没有正常渲染，是否可能可以改进？
      */
     public Level setLevel(int code) {
         for(Level map : Level.values()){
@@ -173,7 +170,6 @@ public class LevelSelectionFrame extends JDialog {
 
     /**
      * 预览按钮，中右侧，有地图的预览
-     * TODO: 给Level截图并本地保存
      * @return 预览按钮
      */
     private JPanel getPreviewPanel(){
@@ -244,7 +240,6 @@ public class LevelSelectionFrame extends JDialog {
 
     /**
      * 获取背景板，进行美化
-     * TODO: 找到背景资源图
      * @return 背景面板
      */
     private BackgroundPanel getBackgroundPanel(){

@@ -24,7 +24,9 @@ import java.util.Queue;
 import static frame.Style.styleBtn;
 
 /**
- * 这是游戏的主界面，包含了游戏的所有核心逻辑和视图
+ * 游戏主界面类，负责展示游戏视图并处理游戏逻辑。
+ * 包含华容道游戏的所有核心功能，包括棋盘显示、移动逻辑、计时计步、存档读档、
+ * 联网对战功能以及胜利条件判断等。
  */
 public class GameFrame extends JFrame {
     private LevelSelectionFrame selectionFrame;
@@ -55,6 +57,7 @@ public class GameFrame extends JFrame {
     private boolean isSaved = false;
     private UserInterfaceFrame userInterfaceFrame;
     private volatile boolean isRunning = true;
+    private volatile boolean isWinning = false;
     private boolean isMoved = true;
     private java.util.List<Direction> solution;
     private java.util.List<Integer> x_selected;
@@ -125,6 +128,13 @@ public class GameFrame extends JFrame {
         loadKlotskiBoard(LogicController.copyMap(this.logicController.getMap()));
     }
 
+    /**
+     * 这是一个有参构造器，在观战时使用
+     * @param userInterfaceFrame 上级界面，方便返回
+     * @param musicPlayer 音乐播放器对象，方便设置BGM
+     * @param socket 连接的Socket对象，用于与服务器进行通信
+     */
+
     public GameFrame(UserInterfaceFrame userInterfaceFrame,MusicPlayer musicPlayer, Socket socket) {
         enableEvents(AWTEvent.KEY_EVENT_MASK);
         enableEvents(AWTEvent.MOUSE_EVENT_MASK);
@@ -143,6 +153,9 @@ public class GameFrame extends JFrame {
         this.setSocket();
     }
 
+    /**
+     * 本方法为客户端监听设置了一个新的线程，方便即时将要求转化为移动等
+     */
     private void setSocket() {
        new Thread(() -> {
             try {
@@ -184,6 +197,9 @@ public class GameFrame extends JFrame {
         }).start();
     }
 
+    /**
+     * 本方法设置了一个客户端监听线程，保证即时链接可能存在的服务器端，并且实现与之通信
+     */
     private void setClientSocket() {
         if(isTimed){
             return;
@@ -235,6 +251,10 @@ public class GameFrame extends JFrame {
         }).start();
     }
 
+    /**
+     * 这是一个发送消息的方法，用于向客户端或服务器发送消息
+     * @param str 需要发送的消息字符串
+     */
     private void sendMessage(String str){
         if(this.out != null){
             out.println(str);
@@ -390,7 +410,7 @@ public class GameFrame extends JFrame {
         int seconds = timeElapsed % 60;
         this.logicController.setTime(minutes * 60 + seconds);
         timerLabel.setText(String.format("Time: %02d:%02d", minutes, seconds));
-        if(timeElapsed >= 300){
+        if(timeElapsed >= 300 && !isWinning){
             int choice = JOptionPane.showConfirmDialog(this,"Time out! Game over.");
             if(choice == JOptionPane.YES_OPTION || choice == JOptionPane.NO_OPTION || choice == JOptionPane.CLOSED_OPTION){
                 stopTimer();
@@ -717,7 +737,7 @@ public class GameFrame extends JFrame {
 
     /**
      * 这是退出游戏的具体实现
-     * TODO: 切换的界面设置有问题，不能正确唤起用户界面
+     * 根据当前的游戏状态，判断是否需要保存游戏，并且弹出确认对话框，还可以唤起正确的关闭方法
      */
     private void quitGame() {
         this.musicPlayer.playSoundEffectPressingButton();
@@ -782,9 +802,11 @@ public class GameFrame extends JFrame {
     }
 
     /**
-     * block移动的具体实现
-     * @param direction 移动的方向
-     * @param isWithdraw 是否是撤回，决定计步
+     * 执行方块移动操作
+     * 根据选中方块的类型和移动方向，判断移动是否合法，并更新游戏状态
+     *
+     * @param direction 移动方向（上、下、左、右）
+     * @param isWithdraw 是否为撤回操作，若为true则不计入步数统计
      */
     private void doMove(Direction direction,boolean isWithdraw) {
         int row = selectedBlock.getRow();
@@ -840,6 +862,10 @@ public class GameFrame extends JFrame {
         }
     }
 
+    /**
+     * 这是重载的doMove方法，主要用于处理来自服务器的移动指令
+     * @param input 来自云端的移动指令
+     */
     private void doMove(String[] input){
         Direction direction = Direction.getDirection(Integer.parseInt(input[4]));
         this.selectedBlock = getBlock(Integer.parseInt(input[1])-direction.getRow(),Integer.parseInt(input[2])-direction.getCol(),Integer.parseInt(input[3]));
@@ -848,13 +874,21 @@ public class GameFrame extends JFrame {
         repaint();
     }
 
-        private void doMove(int x, int y, int type, Direction direction, boolean isWithdraw) {
-            try{this.selectedBlock = getBlock(x, y, type);
-                int row = selectedBlock.getRow();
-                int col = selectedBlock.getCol();
-                int[][] map = logicController.getMap();
-                if (this.logicController.getMap()[row][col] == 1 && Move.validateMove(1, row + direction.getRow(), col + direction.getCol(), direction, this.logicController)) {
-                    map[row][col] = 0;
+    /**
+     * 这是一个移动方法，方便使用搜索结果进行移动
+     * @param x 需要移动的方块的坐标x
+     * @param y 需要移动的方块的坐标y
+     * @param type 需要移动的方块的坐标种类
+     * @param direction 需要移动的方块的方向
+     * @param isWithdraw 是否撤回
+     */
+    private void doMove(int x, int y, int type, Direction direction, boolean isWithdraw) {
+        try{this.selectedBlock = getBlock(x, y, type);
+            int row = selectedBlock.getRow();
+            int col = selectedBlock.getCol();
+            int[][] map = logicController.getMap();
+            if (this.logicController.getMap()[row][col] == 1 && Move.validateMove(1, row + direction.getRow(), col + direction.getCol(), direction, this.logicController)) {
+                map[row][col] = 0;
                     map[row + direction.getRow()][col + direction.getCol()] = 1;
                     blockRepaint(row, col, row + direction.getRow(), col + direction.getCol(), selectedBlock);
                     if (!isWithdraw) {
@@ -916,7 +950,6 @@ public class GameFrame extends JFrame {
     /**
      * 这个方法用于在每次移动后进行计步和判断游戏是否结束，并会记录移动，便于实现撤回和通信
      * @param direction 移动的方向
-     *TODO: Some weird problem occurs here?
      */
     private void afterMove(Direction direction) {
         stepCount++;
@@ -929,6 +962,7 @@ public class GameFrame extends JFrame {
         }
         this.isSpectator = this.logicController.getIsSpectator();
         if(this.logicController.isGameOver(stepCount)){
+            isWinning = true;
             showVictoryDialog();
         }
     }
@@ -961,9 +995,12 @@ public class GameFrame extends JFrame {
         }
     }
     /**
-     * 这是一个键盘绑定的实现，主要是为了实现键盘的控制
+     * 这是一个键盘绑定类的实现，主要是为了实现键盘的控制
      */
     private class KeyBindingExample extends JPanel {
+        /**
+         * 这是一个构造方法，主要用于设置键盘绑定
+         */
         public KeyBindingExample() {
             setFocusable(true);
 
@@ -977,12 +1014,20 @@ public class GameFrame extends JFrame {
             inputMap.put(KeyStroke.getKeyStroke("ESCAPE"), "escape");
 
             actionMap.put("moveUp", new AbstractAction() {
+                /**
+                 * 处理向上移动的事件
+                 * @param e 待处理事件
+                 */
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     doMove(Direction.UP,false);
                 }
             });
 
+            /**
+             * 处理向下移动的事件
+             * @param e 待处理事件
+             */
             actionMap.put("moveDown", new AbstractAction() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
@@ -990,6 +1035,10 @@ public class GameFrame extends JFrame {
                 }
             });
 
+            /**
+             * 处理向左移动的事件
+             * @param e 待处理事件
+             */
             actionMap.put("moveLeft", new AbstractAction() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
@@ -997,6 +1046,10 @@ public class GameFrame extends JFrame {
                 }
             });
 
+            /**
+             * 处理向右移动的事件
+             * @param e 待处理事件
+             */
             actionMap.put("moveRight", new AbstractAction() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
@@ -1004,6 +1057,10 @@ public class GameFrame extends JFrame {
                 }
             });
 
+            /**
+             * 处理关闭窗口的事件
+             * @param e 待处理事件
+             */
             actionMap.put("escape", new AbstractAction() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
@@ -1012,10 +1069,13 @@ public class GameFrame extends JFrame {
             });
         }
 
+        /**
+         * 重绘组件的方法，用于绘制提示信息
+         * @param g 需要重绘的组件
+         */
         @Override
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
-            g.drawString("Use arrow keys to move", 50, 50);
         }
     }
 
@@ -1032,7 +1092,7 @@ public class GameFrame extends JFrame {
      * @param row 查找板块的行数
      * @param col 查找板块的列数
      * @param type 查找板块的属性
-     * @return
+     * @return 对应的Block对象，如果没有找到则返回null
      */
     public Block getBlock(int row, int col, int type) {
         for (Block block : blocks) {

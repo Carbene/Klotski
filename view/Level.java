@@ -94,6 +94,11 @@ public enum Level {
         return CODE;
     }
 
+    /**
+     * 根据代码获取对应的Level
+     * @param CODE 代码
+     * @return 对应的Level枚举常量
+     */
     public static Level getLevel(int CODE) {
         for (Level level : Level.values()) {
             if (level.getCODE() == CODE) {
@@ -103,6 +108,10 @@ public enum Level {
         return null;
     }
 
+    /**
+     * 获取预览图的路径
+     * @return 预览图的路径
+     */
     public String getPREVIEW_PIC_PATH() {
         return PREVIEW_PIC_PATH;
     }

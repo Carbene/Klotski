@@ -26,11 +26,9 @@ public class Block extends JComponent {
     /**
      * 一个有参构造器，构造所需的方块
      * @param imagePath 当前图片路径
-     *              TODO: 也许需要更新为全新的类似于材质或者图片的东西
      * @param row 当前坐标
      * @param col 当前坐标
      * @param type 类型
-     *             TODO: 新的障碍物类（也有bonus)
      * @param gameFrame 归属的游戏框架
      */
     public Block(String imagePath, int row, int col, int type, GameFrame gameFrame) {
@@ -84,6 +82,11 @@ public class Block extends JComponent {
         }
     }
 
+    /**
+     * 根据类型获取高度
+     * @param type 类型
+     * @return 高度
+     */
     private int getHeightByType(int type) {
         switch (type){
             case 1: return GRIDSIZE;
@@ -94,6 +97,11 @@ public class Block extends JComponent {
         }
     }
 
+    /**
+     * 根据类型获取宽度
+     * @param type 类型
+     * @return 宽度
+     */
     private int getWidthByType(int type) {
         switch (type) {
             case 1: return GRIDSIZE;

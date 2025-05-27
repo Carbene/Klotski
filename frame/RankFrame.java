@@ -8,6 +8,10 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.util.ArrayList;
 
+/**
+ * 这是排行榜界面类
+ * 用于展示各个关卡的排行榜
+ */
 public class RankFrame extends JFrame {
     private JTextArea rankTextArea;
     private JScrollPane rankPane;
@@ -36,6 +40,9 @@ public class RankFrame extends JFrame {
         this.setLayout(new BorderLayout());
     }
 
+    /**
+     * 获取背景面板
+     */
     private JPanel getLevelListPanel(){
         JPanel levelListPanel = new JPanel();
         levelListPanel.setLayout(new BoxLayout(levelListPanel, BoxLayout.Y_AXIS));
@@ -59,6 +66,10 @@ public class RankFrame extends JFrame {
         return levelListPanel;
     }
 
+    /**
+     * 获取排行榜的文本区域
+     * @return 滚动面板
+     */
     private JScrollPane getRankPane() {
         rankTextArea = new JTextArea();
         rankTextArea.setEditable(false);
@@ -66,6 +77,10 @@ public class RankFrame extends JFrame {
         return rankPane;
     }
 
+    /**
+     * 更新排行榜预览
+     * 根据选中的关卡，更新排行榜内容
+     */
     private void updatePreview() {
         if (selectedLevel == null) return;
         ArrayList<User> users = User.deserializeList();

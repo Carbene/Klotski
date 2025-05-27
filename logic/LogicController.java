@@ -61,7 +61,6 @@ public class LogicController implements Serializable {
 
     /**
      * 获胜逻辑
-     * TODO:获胜通知栏尚不完整
      * @return 是否胜利
      */
     public boolean isGameOver(int stepCount) {
@@ -245,15 +244,27 @@ public class LogicController implements Serializable {
         return null;
     }
 
+    /**
+     * 判断是否当前的角色身份
+     * @return 是否是旁观者
+     */
     public boolean getIsSpectator() {
         return isSpectator;
     }
 
+    /**
+     * 重写的toString方法，返回当前地图的代码
+     * @return 当前地图的代码
+     */
     @Override
     public String toString(){
         return "Map "+ level.getCODE();
     }
 
+    /**
+     * 修改当前的地图至新的地图
+     * @param map 目标地图
+     */
     public void changeMap(int[][] map) {
         this.map = map;
     }

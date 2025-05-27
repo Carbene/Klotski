@@ -70,6 +70,11 @@ public enum Direction {
 
     }
 
+    /**
+     * 根据代码获取对应的方向
+     * @param code 方向代码
+     * @return 对应的方向
+     */
     public static Direction getDirection(int code) {
         for (Direction direction : Direction.values()) {
             if (direction.code == code) {
@@ -79,6 +84,10 @@ public enum Direction {
         return null;
     }
 
+    /**
+     * 获取方向的代码
+     * @return 方向代码
+     */
     public int getCode() {
         return this.code;
     }

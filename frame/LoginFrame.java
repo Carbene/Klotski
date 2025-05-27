@@ -98,7 +98,6 @@ public class LoginFrame extends JFrame {
 
     /**
      * 获取身份信息的登入区
-     * TODO: 在关闭后密码和用户信息未清除，需要在成功登入后先清除，避免危险
      */
     private void getFieldsPanel() {
         this.fieldsPanel = new JPanel(new GridBagLayout());
@@ -194,7 +193,6 @@ public class LoginFrame extends JFrame {
 
     /**
      * 唤醒用户注册界面
-     * TODO: 对于那些未注册的却直接输入相关信息，是不是可以直接创建，给出一个新的用户？
      */
     private void register(){
         this.registerFrame = new RegisterFrame(this);

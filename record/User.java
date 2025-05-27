@@ -68,7 +68,6 @@ public class User implements Serializable {
      * 反序列化，读取本地的信息
      * @param id
      * @return 匹配的用户对象
-     * TODO: 用户打包后依然可以正常运行
      */
     public static User deserialize(String id){
         User user = null;
@@ -159,7 +158,6 @@ public class User implements Serializable {
 
     /**
      * 判断注册用户合不合法
-     * TODO:加入其他的逻辑中，未合并
      * @param id 用户名是否重复或为空
      * @param password 密码是否为空
      * @return
